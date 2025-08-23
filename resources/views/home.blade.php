@@ -11,10 +11,10 @@
                     Crafted with love, using the finest ingredients and traditional recipes passed down through generations
                 </p>
                 <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                    <a href="{{ route('pizzas.index') }}" class="inline-flex items-center justify-center px-8 py-4 border border-transparent text-lg font-medium rounded-md text-red-600 bg-white hover:bg-gray-50 transition duration-150 ease-in-out">
+                    <a href="{{ route('orders.create') }}" class="inline-flex items-center justify-center px-8 py-4 border border-transparent text-lg font-medium rounded-md text-red-600 bg-white hover:bg-gray-50 transition duration-150 ease-in-out">
                         Order Now
                     </a>
-                    <a href="{{ route('products.index') }}" class="inline-flex items-center justify-center px-8 py-4 border-2 border-white text-lg font-medium rounded-md text-white hover:bg-white hover:text-red-600 transition duration-150 ease-in-out">
+                    <a href="{{ route('orders.create') }}" class="inline-flex items-center justify-center px-8 py-4 border-2 border-white text-lg font-medium rounded-md text-white hover:bg-white hover:text-red-600 transition duration-150 ease-in-out">
                         View Menu
                     </a>
                 </div>

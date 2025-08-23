@@ -182,14 +182,23 @@
                         <div class="space-y-4">
                             @foreach ($order->items as $item)
                                 <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-                                    <div class="flex justify-between items-start">
-                                        <div class="flex-1">
-                                            <h5 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-                                                {{ $item->product->name }}
-                                            </h5>
-                                            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                                Quantity: {{ $item->quantity }}
-                                            </p>
+                                    <div class="flex gap-4">
+                                        <!-- Product Image -->
+                                        <div class="w-20 h-20 bg-white rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0">
+                                            <img src="{{ $item->product->image_url ? asset($item->product->image_url) : 'https://placehold.co/400x400.png' }}" 
+                                                 alt="{{ $item->product->name }}" 
+                                                 class="max-w-full max-h-full object-contain">
+                                        </div>
+                                        
+                                        <!-- Product Details -->
+                                        <div class="flex-1 flex justify-between items-start">
+                                            <div>
+                                                <h5 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                                                    {{ $item->product->name }}
+                                                </h5>
+                                                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                                    Quantity: {{ $item->quantity }}
+                                                </p>
 
                                             @if ($item->pizzaDetails)
                                                 <div class="mt-3 space-y-2">
@@ -216,11 +225,12 @@
                                                     @endif
                                                 </div>
                                             @endif
-                                        </div>
-                                        <div class="text-right ml-4">
-                                            <p class="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                                                RM {{ number_format($item->final_price, 2) }}
-                                            </p>
+                                            </div>
+                                            <div class="text-right ml-4">
+                                                <p class="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                                    RM {{ number_format($item->final_price, 2) }}
+                                                </p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

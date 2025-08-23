@@ -191,7 +191,7 @@ class UserFactory extends Factory
                 'email' => 'ongcw-pm23@student.tarc.edu.my',
                 'phone' => fake()->unique()->phoneNumber(),
                 'password' => Hash::make('ongcw-pm23'),
-                'profile_photo_path' => 'assets/images/profile_photos/default_pfp.jpg',
+                'profile_photo_path' => 'assets/images/profile_photos/ong-chin-wei_1755930146.jpg',
                 'email_verified_at' => null,
             ],
             [
