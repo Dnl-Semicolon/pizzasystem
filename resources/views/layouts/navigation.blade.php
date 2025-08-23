@@ -45,7 +45,7 @@
                     <x-nav-link :href="route('cart.index')" :active="request()->routeIs('cart.*')">
                         {{ __('Cart') }}
                     </x-nav-link>
-                    <x-nav-link :href="route('history.index')" :active="request()->routeIs('orders.index')">
+                    <x-nav-link :href="route('history.index')" :active="request()->routeIs('history.index')">
                         {{ __('Orders') }}
                     </x-nav-link>
                     <x-nav-link :href="route('admin.products.index')">
@@ -190,7 +190,7 @@
             <x-responsive-nav-link :href="route('cart.index')" :active="request()->routeIs('cart.*')">
                 {{ __('Cart') }}
             </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('history.index')" :active="request()->routeIs('orders.index')">
+            <x-responsive-nav-link :href="route('history.index')" :active="request()->routeIs('history.index')">
                 {{ __('Orders') }}
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('admin.products.index')">
