@@ -10,7 +10,7 @@ class CheckoutController extends Controller
     /**
      * Display the checkout page.
      */
-    public function index(): View
+    public function index()
     {
         $cart = session('cart', []);
 

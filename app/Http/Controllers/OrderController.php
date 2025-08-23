@@ -11,6 +11,7 @@ use App\Models\PizzaOrderItemTopping;
 use App\Models\PizzaSize;
 use App\Models\Product;
 use App\Models\Topping;
+use App\Helpers\CartHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -50,50 +51,7 @@ class OrderController extends Controller
 
         $crusts = Crust::all();
 
-        $cart = session('cart', []);
-        $hydratedCart = [];
-
-        foreach ($cart as $item) {
-            if ($item['type'] === 'pizza') {
-                $pizza = Pizza::with('product')->find($item['pizza_id']);
-                $size = PizzaSize::find($item['size_id']);
-                $crust = Crust::find($item['crust_id']);
-
-                // 🧠 Parse the topping IDs from strings like "1-1.50"
-                $toppingIds = collect($item['toppings'] ?? [])
-                    ->map(fn($t) => explode('-', $t)[0]) // get just the ID
-                    ->filter() // remove null/empty
-                    ->map(fn($id) => (int) $id) // cast to int
-                    ->toArray();
-
-                // 🔎 Fetch topping names using Eloquent
-                $toppingNames = Topping::whereIn('id', $toppingIds)->pluck('name')->toArray();
-
-                $hydratedCart[] = [
-                    'type' => 'pizza',
-                    'product_name' => $pizza?->product->name ?? 'Unknown Pizza',
-                    'size' => $size?->name ?? 'Unknown',
-                    'crust' => $crust?->name ?? 'Unknown',
-                    'toppings' => $toppingNames,
-                    'quantity' => $item['quantity'],
-                    'unit_price' => $item['unit_price'],
-                    'total_price' => $item['total_price'],
-                ];
-            } elseif ($item['type'] === 'product') {
-                $product = Product::find($item['product_id']);
-
-                $hydratedCart[] = [
-                    'type' => 'product',
-                    'product_name' => $product?->name ?? 'Unknown Item',
-                    'quantity' => $item['quantity'],
-                    'unit_price' => $item['unit_price'],
-                    'total_price' => $item['total_price'],
-                    'toppings' => [],
-                    'size' => null,
-                    'crust' => null,
-                ];
-            }
-        }
+        $hydratedCart = CartHelper::getHydratedCart();
 
         return view('order.create', compact('products', 'pizzasWithPrices', 'crusts'), ['cart' => $hydratedCart]);
     }
@@ -103,13 +61,13 @@ class OrderController extends Controller
      */
     public function store(Request $request)
     {
-        // 1. Get the cart session object
-        $cart = session('cart', []);
-
-        // 2. If it's empty, don't go forward with storage
-        if (empty($cart)) {
+        // 1. Check if cart is empty using helper
+        if (CartHelper::isCartEmpty()) {
             return redirect()->back()->with('error', 'Cart is empty.');
         }
+
+        // 2. Get the cart session object
+        $cart = session('cart', []);
 
         // 3. Create an order
         $order = Order::create([

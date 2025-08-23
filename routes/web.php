@@ -90,6 +90,18 @@ Route::get('/test-session', function () {
 
 Route::get('/test-user', fn() => dd(Auth::user()?->name ?? 'Not logged in'));
 
+Route::get('/test-cart', function () {
+    $hydratedCart = \App\Helpers\CartHelper::getHydratedCart();
+    
+    return response()->json([
+        'hydrated_cart' => $hydratedCart,
+        'cart_total' => \App\Helpers\CartHelper::getCartTotal(),
+        'cart_count' => \App\Helpers\CartHelper::getCartCount(),
+        'is_empty' => \App\Helpers\CartHelper::isCartEmpty(),
+        'raw_cart' => session('cart', [])
+    ], 200, [], JSON_PRETTY_PRINT);
+});
+
 Route::get('/admin', [DashboardController::class, 'index'])->name('admin.dashboard');
 Route::get('/admin/users', [UserController::class, 'index'])->name('admin.users.index');
 Route::get('/admin/orders', [AdminOrderController::class, 'index'])->name('admin.orders.index');
