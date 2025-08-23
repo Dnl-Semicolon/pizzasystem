@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php artisan view:clear:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
