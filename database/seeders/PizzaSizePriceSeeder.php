@@ -40,6 +40,11 @@ class PizzaSizePriceSeeder extends Seeder
                     'Medium' => 35.99,
                     'Large' => 47.99,
                 ],
+                'Deluxe Cheese' => [
+                    'Small' => 14.59,
+                    'Medium' => 35.99,
+                    'Large' => 47.99,
+                ],
                 // Add more pizzas here...
             ];
 

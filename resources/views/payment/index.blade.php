@@ -6,12 +6,12 @@
     </x-slot>
 
     <div class="py-6 pb-24">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                
+
                 <!-- Main Content -->
                 <div class="lg:col-span-2 space-y-6">
-                    
+
                     <!-- Review & Pay Panel -->
                     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
                         <div class="flex items-center justify-between mb-6">
@@ -20,45 +20,54 @@
                                 Edit
                             </a>
                         </div>
-                        
+
+                        @php
+                            $checkout = session('checkout', []);
+                        @endphp
+
                         <!-- Address Summary -->
                         <div class="mb-6">
-                            <h4 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Delivery Address</h4>
-                            <div class="text-sm text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-900 p-3 rounded-md">
-                                @php
-                                    // Placeholder data - would come from session in real implementation
-                                    $address = session('checkout_address', [
-                                        'full_name' => 'John Doe',
-                                        'phone' => '+60123456789',
-                                        'address_line_1' => '123 Main Street',
-                                        'address_line_2' => 'Apartment 4B',
-                                        'city' => 'Kuala Lumpur',
-                                        'postcode' => '50200',
-                                        'state' => 'Kuala Lumpur'
-                                    ]);
-                                    
-                                    $contact = session('checkout_contact', [
-                                        'email' => 'john@example.com',
-                                        'phone' => '+60123456789'
-                                    ]);
-                                @endphp
-                                
-                                <div class="font-medium">{{ $address['full_name'] ?? 'John Doe' }}</div>
-                                <div>{{ $address['address_line_1'] ?? '123 Main Street' }}</div>
-                                @if(!empty($address['address_line_2']))
-                                    <div>{{ $address['address_line_2'] }}</div>
+                            <h4 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
+                                @if($checkout['delivery_mode'] === 'pickup')
+                                    Pickup Details
+                                @else
+                                    Delivery Address
                                 @endif
-                                <div>{{ $address['postcode'] ?? '50200' }} {{ $address['city'] ?? 'Kuala Lumpur' }}, {{ $address['state'] ?? 'Kuala Lumpur' }}</div>
-                                <div class="mt-1">Phone: {{ $address['phone'] ?? '+60123456789' }}</div>
+                            </h4>
+                            <div class="text-sm text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-900 p-3 rounded-md">
+{{--                                <div class="font-medium">{{ $checkout['contact_name']  }}</div>--}}
+                                @if($checkout['delivery_mode'] === 'pickup')
+                                    <div class="mt-2 text-blue-600 dark:text-blue-400">
+                                        <strong>Pickup Location:</strong><br>
+{{--                                        Pizza Palace Main Store<br>--}}
+{{--                                        123 Food Court, Jalan Makan<br>--}}
+{{--                                        10450 George Town, Penang--}}
+                                    </div>
+                                @else
+                                    <div>{{ $checkout['addr1'] ?? 'N/A' }},</div>
+                                    @if(!empty($checkout['addr2']))
+                                        <div>{{ $checkout['addr2'] }},</div>
+                                    @endif
+                                    <div>{{ $checkout['postcode'] ?? 'N/A' }} {{ $checkout['city'] ?? 'N/A' }}, {{ $checkout['state'] ?? 'N/A' }}</div>
+                                @endif
+{{--                                <div class="mt-1">Phone: {{ $checkout['contact_phone'] ?? 'N/A' }}</div>--}}
+                                @if(!empty($checkout['delivery_notes']))
+                                    <div class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                                        <strong>Notes:</strong> {{ $checkout['delivery_notes'] }}
+                                    </div>
+                                @endif
                             </div>
                         </div>
-                        
+
                         <!-- Contact Summary -->
                         <div>
                             <h4 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Contact Details</h4>
                             <div class="text-sm text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-900 p-3 rounded-md">
-                                <div>Email: {{ $contact['email'] ?? 'john@example.com' }}</div>
-                                <div>Phone: {{ $contact['phone'] ?? '+60123456789' }}</div>
+                                <div>Name: {{$checkout['contact_name'] ?? 'N/A'}}</div>
+                                @if(!empty($checkout['contact_email']))
+                                    <div>Email: {{ $checkout['contact_email'] }}</div>
+                                @endif
+                                <div>Phone: {{ $checkout['contact_phone'] ?? 'N/A' }}</div>
                             </div>
                         </div>
                     </div>
@@ -66,10 +75,10 @@
                     <!-- Payment Method -->
                     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-6">Payment Method</h3>
-                        
+
                         <form id="payment-form" action="{{ route('payment.process') }}" method="POST" class="space-y-6">
                             @csrf
-                            
+
                             <!-- Payment Method Selection -->
                             <div class="space-y-4">
                                 <div class="flex items-center">
@@ -79,7 +88,7 @@
                                         Credit/Debit Card
                                     </label>
                                 </div>
-                                
+
                                 <div class="flex items-center">
                                     <input type="radio" id="payment-fpx" name="payment_method" value="fpx"
                                            class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
@@ -87,7 +96,7 @@
                                         FPX Online Banking
                                     </label>
                                 </div>
-                                
+
                                 <div class="flex items-center">
                                     <input type="radio" id="payment-cod" name="payment_method" value="cod"
                                            class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
@@ -96,7 +105,7 @@
                                     </label>
                                 </div>
                             </div>
-                            
+
                             <!-- Card Payment Form -->
                             <div id="card-form" class="space-y-4 border-t border-gray-200 dark:border-gray-700 pt-6">
                                 <div>
@@ -107,7 +116,7 @@
                                            class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 shadow-sm focus:border-green-500 focus:ring-green-500"
                                            placeholder="Name as it appears on card">
                                 </div>
-                                
+
                                 <div>
                                     <label for="card_number" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                         Card Number *
@@ -117,7 +126,7 @@
                                            placeholder="1234 5678 9012 3456">
                                     <div class="text-xs text-gray-500 mt-1">16-digit card number</div>
                                 </div>
-                                
+
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
                                         <label for="expiry_date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -127,7 +136,7 @@
                                                class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 shadow-sm focus:border-green-500 focus:ring-green-500"
                                                placeholder="MM/YY">
                                     </div>
-                                    
+
                                     <div>
                                         <label for="cvc" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                             CVC *
@@ -139,7 +148,7 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- FPX Bank Selection -->
                             <div id="fpx-form" class="hidden space-y-4 border-t border-gray-200 dark:border-gray-700 pt-6">
                                 <div>
@@ -163,7 +172,7 @@
                                     <div class="text-xs text-gray-500 mt-1">You'll be redirected to your bank's secure login page</div>
                                 </div>
                             </div>
-                            
+
                             <!-- COD Information -->
                             <div id="cod-info" class="hidden border-t border-gray-200 dark:border-gray-700 pt-6">
                                 <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md p-4">
@@ -189,36 +198,41 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                         </form>
                     </div>
-                    
+
                 </div>
 
                 <!-- Order Summary Sidebar -->
                 <div class="lg:col-span-1">
                     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 sticky top-6">
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Order Summary</h3>
-                        
+
                         @php
-                            $cart = session('cart', []);
                             $subtotal = 0;
                         @endphp
-                        
+
                         <!-- Order Items -->
                         <div class="space-y-3 mb-4 max-h-48 overflow-y-auto">
                             @forelse($cart as $item)
                                 @php
-                                    $itemTotal = ($item['unit_price'] ?? $item['price'] ?? 0) * ($item['quantity'] ?? 1);
+                                    $itemTotal = $item->total_price;
                                     $subtotal += $itemTotal;
                                 @endphp
                                 <div class="flex justify-between text-sm">
                                     <div class="flex-1">
                                         <div class="font-medium text-gray-900 dark:text-gray-100">
-                                            {{ $item['name'] ?? $item['product_name'] ?? 'Item' }}
+                                            {{ $item->product_name }}
                                         </div>
                                         <div class="text-gray-500 dark:text-gray-400">
-                                            Qty: {{ $item['quantity'] ?? 1 }}
+                                            Qty: {{ $item->quantity }}
+                                            @if($item->type === 'pizza')
+                                                <br>{{ $item->size?->name ?? 'Unknown' }} {{ $item->crust?->name ?? 'Unknown' }}
+                                                @if($item->toppings && $item->toppings->count() > 0)
+                                                    <br>+ {{ $item->toppings->pluck('name')->join(', ') }}
+                                                @endif
+                                            @endif
                                         </div>
                                     </div>
                                     <div class="font-medium text-gray-900 dark:text-gray-100">
@@ -229,12 +243,12 @@
                                 <div class="text-sm text-gray-500 dark:text-gray-400">No items in cart</div>
                             @endforelse
                         </div>
-                        
+
                         @php
                             $deliveryFee = 5.00;
                             $grandTotal = $subtotal + $deliveryFee;
                         @endphp
-                        
+
                         <!-- Totals -->
                         <div class="space-y-3 text-sm border-t border-gray-200 dark:border-gray-700 pt-4">
                             <div class="flex justify-between">
@@ -253,7 +267,7 @@
                         </div>
                     </div>
                 </div>
-                
+
             </div>
         </div>
     </div>
@@ -281,16 +295,16 @@ document.addEventListener('DOMContentLoaded', function() {
     const codInfo = document.getElementById('cod-info');
     const payNowBtn = document.getElementById('pay-now-btn');
     const form = document.getElementById('payment-form');
-    
+
     // Handle payment method changes
     function handlePaymentMethodChange() {
         const selectedMethod = document.querySelector('input[name="payment_method"]:checked').value;
-        
+
         // Hide all forms
         cardForm.classList.add('hidden');
         fpxForm.classList.add('hidden');
         codInfo.classList.add('hidden');
-        
+
         // Show relevant form
         if (selectedMethod === 'card') {
             cardForm.classList.remove('hidden');
@@ -299,15 +313,15 @@ document.addEventListener('DOMContentLoaded', function() {
         } else if (selectedMethod === 'cod') {
             codInfo.classList.remove('hidden');
         }
-        
+
         validateForm();
     }
-    
+
     // Form validation
     function validateForm() {
         const selectedMethod = document.querySelector('input[name="payment_method"]:checked').value;
         let isValid = true;
-        
+
         if (selectedMethod === 'card') {
             const cardFields = ['cardholder_name', 'card_number', 'expiry_date', 'cvc'];
             cardFields.forEach(fieldName => {
@@ -323,11 +337,11 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         // COD doesn't require additional validation
-        
+
         payNowBtn.disabled = !isValid;
         return isValid;
     }
-    
+
     // Format card number input
     document.getElementById('card_number').addEventListener('input', function(e) {
         let value = e.target.value.replace(/\s/g, '').replace(/[^0-9]/gi, '');
@@ -337,7 +351,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         validateForm();
     });
-    
+
     // Format expiry date input
     document.getElementById('expiry_date').addEventListener('input', function(e) {
         let value = e.target.value.replace(/\D/g, '');
@@ -347,39 +361,39 @@ document.addEventListener('DOMContentLoaded', function() {
         e.target.value = value;
         validateForm();
     });
-    
+
     // Format CVC input
     document.getElementById('cvc').addEventListener('input', function(e) {
         e.target.value = e.target.value.replace(/\D/g, '');
         validateForm();
     });
-    
+
     // Event listeners
     paymentMethodRadios.forEach(radio => {
         radio.addEventListener('change', handlePaymentMethodChange);
     });
-    
+
     // Listen for input changes on card form
     cardForm.addEventListener('input', validateForm);
     fpxForm.addEventListener('change', validateForm);
-    
+
     // Handle form submission
     form.addEventListener('submit', function(e) {
         e.preventDefault();
-        
+
         if (!validateForm()) {
             alert('Please fill in all required fields.');
             return;
         }
-        
+
         // Simulate payment processing
         payNowBtn.innerHTML = '<svg class="animate-spin w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Processing...';
         payNowBtn.disabled = true;
-        
+
         // Submit the form normally
         form.submit();
     });
-    
+
     // Initial setup
     handlePaymentMethodChange();
 });

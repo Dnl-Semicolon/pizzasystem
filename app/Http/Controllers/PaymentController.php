@@ -9,6 +9,7 @@ use App\Models\PizzaOrderItemTopping;
 use App\Models\Pizza;
 use App\Models\PizzaSize;
 use App\Models\Crust;
+use App\Helpers\CartHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -18,15 +19,15 @@ class PaymentController extends Controller
     /**
      * Display the payment page.
      */
-    public function index(): View
+    public function index()
     {
-        $cart = session('cart', []);
-        
-        if (empty($cart)) {
+        if (CartHelper::isCartEmpty()) {
             return redirect()->route('orders.create')->with('error', 'Your cart is empty.');
         }
 
-        return view('payment.index');
+        $hydratedCart = CartHelper::getHydratedCart();
+
+        return view('payment.index', ['cart' => $hydratedCart]);
     }
 
     /**
@@ -108,6 +109,7 @@ class PaymentController extends Controller
 
         // Clear cart
         session()->forget('cart');
+        session()->forget('checkout');
 
         return redirect()->route('payment.confirm', $order->id)
             ->with('success', 'Payment processed successfully!');

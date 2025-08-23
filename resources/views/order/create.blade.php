@@ -31,7 +31,7 @@
                                     <button role="tab" aria-selected="false" data-category="side" class="category-pill px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600">
                                         Sides
                                     </button>
-                                    <button role="tab" aria-selected="false" data-category="desserts" class="category-pill px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600">
+                                    <button role="tab" aria-selected="false" data-category="dessert" class="category-pill px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600">
                                         Desserts
                                     </button>
                                 </nav>
@@ -42,7 +42,7 @@
                                      * @var $products
                                      */
                                     $grouped = $products->groupBy('type');
-                                    $allCategories = ['pizza', 'drink', 'side', 'desserts'];
+                                    $allCategories = ['pizza', 'drink', 'side', 'dessert'];
                                 @endphp
 
                                 @foreach ($allCategories as $category)
@@ -52,7 +52,9 @@
                                             <div class="grid lg:grid-cols-2 gap-4">
                                                 @foreach ($grouped[$category] as $product)
                                             <div class="border border-gray-300 dark:border-gray-400 rounded-lg p-4 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow">
-                                                <img src="{{ $product->image_url ? asset($product->image_url) : 'https://placehold.co/600x400.png' }}" alt="">
+                                                <div class="w-full h-56 bg-white rounded-lg mb-3 flex items-center justify-center overflow-hidden">
+                                                    <img src="{{ $product->image_url ? asset($product->image_url) : 'https://placehold.co/600x400.png' }}" alt="{{ $product->name }}" class="max-w-full max-h-full object-contain">
+                                                </div>
                                                 <div class="font-semibold text-lg mb-1">{{ $product->name }}</div>
                                                 <p class="lg:min-h-20 min-h-10 text-sm text-gray-500 dark:text-gray-400 mb-2">{{ $product->description }}</p>
 
@@ -124,22 +126,28 @@
                                         @foreach ($cart as $item)
                                         <div class="border p-4 rounded bg-white dark:bg-gray-900">
                                             <p class="font-semibold">
-                                                {{$item['product_name']}} ({{ucfirst($item['type'])}})
+                                                {{ $item->product_name }} ({{ ucfirst($item->type) }})
                                             </p>
                                             {{-- If pizza, show size, crust, toppings --}}
-                                            @if ($item['type'] === 'pizza')
+                                            @if ($item->type === 'pizza')
                                                 <ul class="text-sm mt-2 space-y-1">
-                                                    <li><strong>Size:</strong> {{ $item['size'] }}</li>
-                                                    <li><strong>Crust:</strong> {{ $item['crust'] }}</li>
-                                                    @if (!empty($item['toppings']))
+                                                    <li><strong>Size:</strong> {{ $item->size?->name ?? 'Unknown' }}</li>
+                                                    <li><strong>Crust:</strong> {{ $item->crust?->name ?? 'Unknown' }}</li>
+                                                    @if ($item->toppings && $item->toppings->count() > 0)
                                                         <li>
                                                             <strong>Toppings:</strong>
-                                                            {{ implode(', ', $item['toppings']) }}
+                                                            {{ $item->toppings->pluck('name')->join(', ') }}
                                                         </li>
                                                     @endif
-                                                    <li><strong>Quantity:</strong> {{ $item['quantity'] }}</li>
-                                                    <li><strong>Unit Price:</strong> RM {{ number_format($item['unit_price'], 2) }}</li>
-                                                    <li><strong>Total:</strong> RM {{ number_format($item['total_price'], 2) }}</li>
+                                                    <li><strong>Quantity:</strong> {{ $item->quantity }}</li>
+                                                    <li><strong>Unit Price:</strong> RM {{ number_format($item->unit_price, 2) }}</li>
+                                                    <li><strong>Total:</strong> RM {{ number_format($item->total_price, 2) }}</li>
+                                                </ul>
+                                            @else
+                                                <ul class="text-sm mt-2 space-y-1">
+                                                    <li><strong>Quantity:</strong> {{ $item->quantity }}</li>
+                                                    <li><strong>Unit Price:</strong> RM {{ number_format($item->unit_price, 2) }}</li>
+                                                    <li><strong>Total:</strong> RM {{ number_format($item->total_price, 2) }}</li>
                                                 </ul>
                                             @endif
                                         </div>
@@ -149,10 +157,7 @@
                                 <!-- Order Summary Card -->
                                 @if (count($cart) !== 0)
                                     @php
-                                        $subtotal = 0;
-                                        foreach ($cart as $item) {
-                                            $subtotal += ($item['unit_price'] ?? $item['total_price'] ?? 0) * ($item['quantity'] ?? 1);
-                                        }
+                                        $subtotal = collect($cart)->sum('total_price');
                                         $deliveryFee = 5.00;
                                         $grandTotal = $subtotal + $deliveryFee;
                                     @endphp
@@ -256,43 +261,9 @@
 
                     setActivePill(this);
                     filterSections(category);
-
-                    // Update URL hash for deep linking
-                    if (category === 'all') {
-                        history.replaceState(null, null, window.location.pathname + window.location.search);
-                    } else {
-                        window.location.hash = category;
-                    }
                 });
             });
 
-            // Handle deep linking on page load
-            function handleDeepLink() {
-                const urlParams = new URLSearchParams(window.location.search);
-                const categoryParam = urlParams.get('category');
-                const hashCategory = window.location.hash.replace('#', '');
-
-                let targetCategory = 'all';
-
-                if (hashCategory && ['pizza', 'drinks', 'side', 'desserts'].includes(hashCategory)) {
-                    targetCategory = hashCategory;
-                } else if (categoryParam && ['pizza', 'drinks', 'side', 'desserts'].includes(categoryParam)) {
-                    targetCategory = categoryParam;
-                }
-
-                // Find and activate the correct pill
-                const targetPill = document.querySelector(`[data-category="${targetCategory}"]`);
-                if (targetPill) {
-                    setActivePill(targetPill);
-                    filterSections(targetCategory);
-                }
-            }
-
-            // Initialize deep linking
-            handleDeepLink();
-
-            // Handle browser back/forward navigation
-            window.addEventListener('hashchange', handleDeepLink);
         });
 
         // document.querySelectorAll('.add-product-btn').forEach(btn => {

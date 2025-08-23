@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AddressController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
@@ -45,8 +46,12 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::post('/profile/photo', [ProfileController::class, 'updatePhoto'])->name('profile.photo.update');
     Route::delete('/profile/photo', [ProfileController::class, 'deletePhoto'])->name('profile.photo.delete');
-    Route::get('/history', [HistoryController::class, 'index'])->name('history.index');
-    Route::get('/payments', [PaymentHistoryController::class, 'index'])->name('payment.index');
+    Route::get('/orders', [HistoryController::class, 'index'])->name('history.index');
+    Route::get('/payments', [PaymentHistoryController::class, 'index'])->name('paymentHistory.index');
+
+    // Address management routes
+    Route::resource('addresses', AddressController::class);
+    Route::post('/addresses/{address}/set-default', [AddressController::class, 'setDefault'])->name('addresses.set-default');
 });
 
 Route::get('/pizzas', [PizzaController::class, 'index'])->name('pizzas.index');
@@ -57,12 +62,14 @@ Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
 
 Route::post('/cart/clear', function () {
     session()->forget('cart');
+    session()->forget('checkout');
     return back()->with('success', 'Cart has been cleared.');
 })->name('cart.clear');
 
 Route::post('/cart/add', [CartController::class, 'addToCart'])->name('cart.add');
 
-Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
+Route::get('/checkout', [CheckoutController::class, 'index'])->middleware('auth')->name('checkout.index');
+Route::post('/checkout/save', [CheckoutController::class, 'store'])->middleware('auth')->name('checkout.store');
 
 Route::get('/payment', [PaymentController::class, 'index'])->name('payment.index');
 Route::post('/payment', [PaymentController::class, 'process'])->name('payment.process');
@@ -76,7 +83,7 @@ Route::get('/admin/products', [AdminProductController::class, 'index'])->name('a
 Route::get('/toppings', [ToppingController::class, 'index'])->name('toppings.index');
 Route::get('/pizzaSizePrices', [PizzaSizePriceController::class, 'index'])->name('pizzaSizePrices.index');
 Route::get('/crustPriceAdditions', [CrustPriceAdditionController::class, 'index'])->name('crustPriceAdditions.index');
-Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+//Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
 Route::get('/menu', [OrderController::class, 'create'])->name('orders.create'); // public
 Route::post('/orders/store', [OrderController::class, 'store'])->middleware('auth')->name('orders.store');
 Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
@@ -92,7 +99,7 @@ Route::get('/test-user', fn() => dd(Auth::user()?->name ?? 'Not logged in'));
 
 Route::get('/test-cart', function () {
     $hydratedCart = \App\Helpers\CartHelper::getHydratedCart();
-    
+
     return response()->json([
         'hydrated_cart' => $hydratedCart,
         'cart_total' => \App\Helpers\CartHelper::getCartTotal(),

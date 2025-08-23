@@ -123,7 +123,8 @@
                                 <input id="select-all" type="checkbox" class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 dark:bg-gray-900">
                             </th>
                             <th class="w-12 px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-600 dark:text-gray-300">Image</th>
-                            <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-600 dark:text-gray-300">Name</th>
+                            <th class="w-72 px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-600 dark:text-gray-300">Name</th>
+                            <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-600 dark:text-gray-300">Phone</th>
                         </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100 bg-white dark:divide-gray-800 dark:bg-gray-900">
@@ -135,11 +136,14 @@
                                 <td class="w-12 px-3 py-2 align-middle">
                                     <img src="{{ $user->profile_photo_path ? asset($user->profile_photo_path) : 'https://placehold.co/64x64.png' }}" alt="" class="h-10 w-10 rounded-full object-cover ring-1 ring-gray-200 dark:ring-gray-700">
                                 </td>
-                                <td class="px-3 py-2 align-middle">
+                                <td class="w-72 px-3 py-2 align-middle">
                                     <div class="font-medium text-gray-900 dark:text-gray-100">{{ $user->name }}</div>
                                     @if($user->email)
                                         <div class="mt-0.5 line-clamp-2 text-sm text-gray-500 dark:text-gray-400">{{ $user->email }}</div>
                                     @endif
+                                </td>
+                                <td class="px-3 py-2 align-left">
+                                    <div class="font-medium text-gray-900 dark:text-gray-100">{{ $user->phone }}</div>
                                 </td>
                             </tr>
                         @empty

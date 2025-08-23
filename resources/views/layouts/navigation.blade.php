@@ -16,12 +16,6 @@
                     <x-nav-link :href="route('home')" :active="request()->routeIs('home')">
                         {{ __('Home') }}
                     </x-nav-link>
-                    <x-nav-link :href="route('admin.products.index')">
-                        {{ __('Admin') }}
-                    </x-nav-link>
-                    <x-nav-link :href="route('cart.index')" :active="request()->routeIs('cart.*')">
-                        {{ __('Cart') }}
-                    </x-nav-link>
                     {{--
                     <x-nav-link :href="route('pizzas.index')" :active="request()->routeIs('pizzas.*')">
                         {{ __('Pizzas') }}
@@ -48,18 +42,24 @@
                     <x-nav-link :href="route('orders.create')" :active="request()->routeIs('orders.create')">
                         {{ __('Menu') }}
                     </x-nav-link>
-                    <x-nav-link :href="route('orders.index')" :active="request()->routeIs('orders.index')">
+                    <x-nav-link :href="route('cart.index')" :active="request()->routeIs('cart.*')">
+                        {{ __('Cart') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('history.index')" :active="request()->routeIs('orders.index')">
                         {{ __('Orders') }}
                     </x-nav-link>
-                    <x-nav-link :href="route('orderItems.index')" :active="request()->routeIs('orderItems.index')">
-                        {{ __('Order Items') }}
+                    <x-nav-link :href="route('admin.products.index')">
+                        {{ __('Admin') }}
                     </x-nav-link>
-                    <x-nav-link :href="route('pizzaOrderItemDetails.index')" :active="request()->routeIs('pizzaOrderItemDetails.index')">
-                        {{ __('Pizza Order Item Details') }}
-                    </x-nav-link>
-                    <x-nav-link :href="route('pizzaOrderItemToppings.index')" :active="request()->routeIs('pizzaOrderItemToppings.index')">
-                        {{ __('Pizza Order Item Toppings') }}
-                    </x-nav-link>
+{{--                    <x-nav-link :href="route('orderItems.index')" :active="request()->routeIs('orderItems.index')">--}}
+{{--                        {{ __('Order Items') }}--}}
+{{--                    </x-nav-link>--}}
+{{--                    <x-nav-link :href="route('pizzaOrderItemDetails.index')" :active="request()->routeIs('pizzaOrderItemDetails.index')">--}}
+{{--                        {{ __('Pizza Order Item Details') }}--}}
+{{--                    </x-nav-link>--}}
+{{--                    <x-nav-link :href="route('pizzaOrderItemToppings.index')" :active="request()->routeIs('pizzaOrderItemToppings.index')">--}}
+{{--                        {{ __('Pizza Order Item Toppings') }}--}}
+{{--                    </x-nav-link>--}}
                     {{--Guest navigation links - only show for anonymous users--}}
                     @guest
                         {{--You can add additional guest navigation links here if needed--}}
@@ -161,13 +161,7 @@
             <x-responsive-nav-link :href="route('home')" :active="request()->routeIs('home')">
                 {{ __('Home') }}
             </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('admin.products.index')">
-                {{ __('Admin') }}
-            </x-responsive-nav-link>
             {{--
-            <x-responsive-nav-link :href="route('cart.index')" :active="request()->routeIs('cart.*')">
-                {{ __('Cart') }}
-            </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('pizzas.index')" :active="request()->routeIs('pizzas.*')">
                 {{ __('Pizzas') }}
             </x-responsive-nav-link>
@@ -193,18 +187,24 @@
             <x-responsive-nav-link :href="route('orders.create')" :active="request()->routeIs('orders.create')">
                 {{ __('Menu') }}
             </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('orders.index')" :active="request()->routeIs('orders.index')">
+            <x-responsive-nav-link :href="route('cart.index')" :active="request()->routeIs('cart.*')">
+                {{ __('Cart') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('history.index')" :active="request()->routeIs('orders.index')">
                 {{ __('Orders') }}
             </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('orderItems.index')" :active="request()->routeIs('orderItems.index')">
-                {{ __('Order Items') }}
+            <x-responsive-nav-link :href="route('admin.products.index')">
+                {{ __('Admin') }}
             </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('pizzaOrderItemDetails.index')" :active="request()->routeIs('pizzaOrderItemDetails.index')">
-                {{ __('Pizza Order Item Details') }}
-            </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('pizzaOrderItemToppings.index')" :active="request()->routeIs('pizzaOrderItemToppings.index')">
-                {{ __('Pizza Order Item Toppings') }}
-            </x-responsive-nav-link>
+{{--            <x-responsive-nav-link :href="route('orderItems.index')" :active="request()->routeIs('orderItems.index')">--}}
+{{--                {{ __('Order Items') }}--}}
+{{--            </x-responsive-nav-link>--}}
+{{--            <x-responsive-nav-link :href="route('pizzaOrderItemDetails.index')" :active="request()->routeIs('pizzaOrderItemDetails.index')">--}}
+{{--                {{ __('Pizza Order Item Details') }}--}}
+{{--            </x-responsive-nav-link>--}}
+{{--            <x-responsive-nav-link :href="route('pizzaOrderItemToppings.index')" :active="request()->routeIs('pizzaOrderItemToppings.index')">--}}
+{{--                {{ __('Pizza Order Item Toppings') }}--}}
+{{--            </x-responsive-nav-link>--}}
 
             <!-- Additional guest navigation links can be added here for mobile -->
             @guest

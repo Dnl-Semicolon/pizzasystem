@@ -26,6 +26,7 @@ class UserFactory extends Factory
         return [
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
+            'phone' => fake()->unique()->phoneNumber(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'profile_photo_path' => null,
@@ -43,213 +44,165 @@ class UserFactory extends Factory
         ]);
     }
 
-    public function daniel(): static
+    /**
+     * Get array of friend data for seeding
+     */
+    public static function getFriendsData(): array
     {
-        return $this->state(fn (array $attributes) => [
-            'name' => 'Daniel Tan',
-            'email' => 'danielykt-pm23@student.tarc.edu.my',
-            'password' => Hash::make('dWhy551177:'),
-            'profile_photo_path' => 'assets/images/profile_photos/daniel.jpg',
-            'email_verified_at' => null,
-        ]);
-    }
-
-    public function fongWenYi(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'name' => 'Fong Wen Yi',
-            'email' => 'fongwy-pm23@student.tarc.edu.my',
-            'password' => 'fongwy-pm23', // fixedPassword = unique part of email
-            'profile_photo_path' => 'assets/images/profile_photos/fongWenYi.png',
-            'email_verified_at' => null,
-        ]);
-    }
-
-    public function fionTanXuanLing(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'name' => 'Fion Tan Xuan Ling',
-            'email' => 'fiontxl-pm23@student.tarc.edu.my',
-            'password' => 'fiontxl-pm23', // fixedPassword = unique part of email
-            'profile_photo_path' => 'assets/images/profile_photos/fionTanXuanLing.png',
-            'email_verified_at' => null,
-        ]);
-    }
-
-    public function farhanIslamShafin(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'name' => 'Farhan Islam Shafin',
-            'email' => 'farhanis-pm23@student.tarc.edu.my',
-            'password' => 'farhanis-pm23', // fixedPassword = unique part of email
-            'profile_photo_path' => 'assets/images/profile_photos/default_pfp.jpg',
-            'email_verified_at' => null,
-        ]);
-    }
-
-    public function limTziShe(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'name' => 'Lim Tzi She',
-            'email' => 'limts-pm23@student.tarc.edu.my',
-            'password' => 'limts-pm23', // fixedPassword = unique part of email
-            'profile_photo_path' => 'assets/images/profile_photos/default_pfp.jpg',
-            'email_verified_at' => null,
-        ]);
-    }
-
-    public function lawJunYan(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'name' => 'Law Jun Yan',
-            'email' => 'lawjy-pm23@student.tarc.edu.my',
-            'password' => 'lawjy-pm23', // fixedPassword = unique part of email
-            'profile_photo_path' => 'assets/images/profile_photos/lawJunYan.png',
-            'email_verified_at' => null,
-        ]);
-    }
-
-    public function chengWinky(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'name' => 'Cheng Winky',
-            'email' => 'chengw-pp22@student.tarc.edu.my',
-            'password' => 'chengw-pp22', // fixedPassword = unique part of email
-            'profile_photo_path' => 'assets/images/profile_photos/default_pfp.jpg',
-            'email_verified_at' => null,
-        ]);
-    }
-
-    public function chanelOoiAnnJoa(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'name' => 'Chanel Ooi Ann Joa',
-            'email' => 'chaneloaj-pp22@student.tarc.edu.my',
-            'password' => 'chaneloaj-pp22', // fixedPassword = unique part of email
-            'profile_photo_path' => 'assets/images/profile_photos/default_pfp.jpg',
-            'email_verified_at' => null,
-        ]);
-    }
-
-    public function chooZhengYi(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'name' => 'Choo Zheng Yi',
-            'email' => 'choozy-pm23@student.tarc.edu.my',
-            'password' => 'choozy-pm23', // fixedPassword = unique part of email
-            'profile_photo_path' => 'assets/images/profile_photos/chooZhengYi.png',
-            'email_verified_at' => null,
-        ]);
-    }
-
-    public function jivenesWaraan(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'name' => 'Jivenes Waraan',
-            'email' => 'jiveneswsks-pm23@student.tarc.edu.my',
-            'password' => 'jiveneswsks-pm23', // fixedPassword = unique part of email
-            'profile_photo_path' => 'assets/images/profile_photos/default_pfp.jpg',
-            'email_verified_at' => null,
-        ]);
-    }
-
-    public function rickyGohEuXie(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'name' => 'Ricky Goh Eu Xie',
-            'email' => 'rickygex-pm23@student.tarc.edu.my',
-            'password' => 'rickygex-pm23', // fixedPassword = unique part of email
-            'profile_photo_path' => 'assets/images/profile_photos/rickyGohEuXie.png',
-            'email_verified_at' => null,
-        ]);
-    }
-
-    public function weeYiMing(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'name' => 'Wee Yi Ming',
-            'email' => 'weeym-pm23@student.tarc.edu.my',
-            'password' => 'weeym-pm23', // fixedPassword = unique part of email
-            'profile_photo_path' => 'assets/images/profile_photos/weeYiMing.jpg',
-            'email_verified_at' => null,
-        ]);
-    }
-
-    public function gooiKhaiYi(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'name' => 'Gooi Khai Yi',
-            'email' => 'gooiky-wp22@student.tarc.edu.my',
-            'password' => 'gooiky-wp22', // fixedPassword = unique part of email
-            'profile_photo_path' => 'assets/images/profile_photos/gooiKhaiYi.png',
-            'email_verified_at' => null,
-        ]);
-    }
-
-    public function leongKaiBin(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'name' => 'Leong Kai Bin',
-            'email' => 'leongkb-pm23@student.tarc.edu.my',
-            'password' => 'leongkb-pm23', // fixedPassword = unique part of email
-            'profile_photo_path' => 'assets/images/profile_photos/default_pfp.jpg',
-            'email_verified_at' => null,
-        ]);
-    }
-
-    public function liangZenYin(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'name' => 'Liang Zen Yin',
-            'email' => 'liangzy-pm23@student.tarc.edu.my',
-            'password' => 'liangzy-pm23', // fixedPassword = unique part of email
-            'profile_photo_path' => 'assets/images/profile_photos/default_pfp.jpg',
-            'email_verified_at' => null,
-        ]);
-    }
-
-    public function tehJyyJiun(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'name' => 'Teh Jyy Jiun',
-            'email' => 'tehjj-pm23@student.tarc.edu.my',
-            'password' => 'tehjj-pm23', // fixedPassword = unique part of email
-            'profile_photo_path' => 'assets/images/profile_photos/default_pfp.jpg',
-            'email_verified_at' => null,
-        ]);
-    }
-
-    public function soonYenTeng(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'name' => 'Soon Yen Teng',
-            'email' => 'soonyt-pm23@student.tarc.edu.my',
-            'password' => 'soonyt-pm23', // fixedPassword = unique part of email
-            'profile_photo_path' => 'assets/images/profile_photos/default_pfp.jpg',
-            'email_verified_at' => null,
-        ]);
-    }
-
-    public function ongChinWei(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'name' => 'Ong Chin Wei',
-            'email' => 'ongcw-pm23@student.tarc.edu.my',
-            'password' => 'ongcw-pm23', // fixedPassword = unique part of email
-            'profile_photo_path' => 'assets/images/profile_photos/default_pfp.jpg',
-            'email_verified_at' => null,
-        ]);
-    }
-
-    public function limJiaYing(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'name' => 'Lim Jia Ying',
-            'email' => 'limjy-pm23@student.tarc.edu.my',
-            'password' => 'limjy-pm23', // fixedPassword = unique part of email
-            'profile_photo_path' => 'assets/images/profile_photos/default_pfp.jpg',
-            'email_verified_at' => null,
-        ]);
+        return [
+            [
+                'name' => 'Daniel Tan',
+                'email' => 'danielykt-pm23@student.tarc.edu.my',
+                'phone' => '01124120654',
+                'password' => Hash::make('dWhy551177:'),
+                'profile_photo_path' => 'assets/images/profile_photos/daniel-tan_1755324145.jpg',
+                'email_verified_at' => null,
+            ],
+            [
+                'name' => 'Fong Wen Yi',
+                'email' => 'fongwy-pm23@student.tarc.edu.my',
+                'phone' => fake()->unique()->phoneNumber(),
+                'password' => Hash::make('fongwy-pm23'),
+                'profile_photo_path' => 'assets/images/profile_photos/fongWenYi.png',
+                'email_verified_at' => null,
+            ],
+            [
+                'name' => 'Fion Tan Xuan Ling',
+                'email' => 'fiontxl-pm23@student.tarc.edu.my',
+                'phone' => fake()->unique()->phoneNumber(),
+                'password' => Hash::make('fiontxl-pm23'),
+                'profile_photo_path' => 'assets/images/profile_photos/fionTanXuanLing.png',
+                'email_verified_at' => null,
+            ],
+            [
+                'name' => 'Farhan Islam Shafin',
+                'email' => 'farhanis-pm23@student.tarc.edu.my',
+                'phone' => fake()->unique()->phoneNumber(),
+                'password' => Hash::make('farhanis-pm23'),
+                'profile_photo_path' => 'assets/images/profile_photos/default_pfp.jpg',
+                'email_verified_at' => null,
+            ],
+            [
+                'name' => 'Lim Tzi She',
+                'email' => 'limts-pm23@student.tarc.edu.my',
+                'phone' => fake()->unique()->phoneNumber(),
+                'password' => Hash::make('limts-pm23'),
+                'profile_photo_path' => 'assets/images/profile_photos/default_pfp.jpg',
+                'email_verified_at' => null,
+            ],
+            [
+                'name' => 'Law Jun Yan',
+                'email' => 'lawjy-pm23@student.tarc.edu.my',
+                'phone' => fake()->unique()->phoneNumber(),
+                'password' => Hash::make('lawjy-pm23'),
+                'profile_photo_path' => 'assets/images/profile_photos/lawJunYan.png',
+                'email_verified_at' => null,
+            ],
+            [
+                'name' => 'Cheng Winky',
+                'email' => 'chengw-pp22@student.tarc.edu.my',
+                'phone' => fake()->unique()->phoneNumber(),
+                'password' => Hash::make('chengw-pp22'),
+                'profile_photo_path' => 'assets/images/profile_photos/default_pfp.jpg',
+                'email_verified_at' => null,
+            ],
+            [
+                'name' => 'Chanel Ooi Ann Joa',
+                'email' => 'chaneloaj-pp22@student.tarc.edu.my',
+                'phone' => fake()->unique()->phoneNumber(),
+                'password' => Hash::make('chaneloaj-pp22'),
+                'profile_photo_path' => 'assets/images/profile_photos/default_pfp.jpg',
+                'email_verified_at' => null,
+            ],
+            [
+                'name' => 'Choo Zheng Yi',
+                'email' => 'choozy-pm23@student.tarc.edu.my',
+                'phone' => fake()->unique()->phoneNumber(),
+                'password' => Hash::make('choozy-pm23'),
+                'profile_photo_path' => 'assets/images/profile_photos/chooZhengYi.png',
+                'email_verified_at' => null,
+            ],
+            [
+                'name' => 'Jivenes Waraan',
+                'email' => 'jiveneswsks-pm23@student.tarc.edu.my',
+                'phone' => fake()->unique()->phoneNumber(),
+                'password' => Hash::make('jiveneswsks-pm23'),
+                'profile_photo_path' => 'assets/images/profile_photos/default_pfp.jpg',
+                'email_verified_at' => null,
+            ],
+            [
+                'name' => 'Ricky Goh Eu Xie',
+                'email' => 'rickygex-pm23@student.tarc.edu.my',
+                'phone' => fake()->unique()->phoneNumber(),
+                'password' => Hash::make('rickygex-pm23'),
+                'profile_photo_path' => 'assets/images/profile_photos/rickyGohEuXie.png',
+                'email_verified_at' => null,
+            ],
+            [
+                'name' => 'Wee Yi Ming',
+                'email' => 'weeym-pm23@student.tarc.edu.my',
+                'phone' => fake()->unique()->phoneNumber(),
+                'password' => Hash::make('weeym-pm23'),
+                'profile_photo_path' => 'assets/images/profile_photos/weeYiMing.jpg',
+                'email_verified_at' => null,
+            ],
+            [
+                'name' => 'Gooi Khai Yi',
+                'email' => 'gooiky-wp22@student.tarc.edu.my',
+                'phone' => fake()->unique()->phoneNumber(),
+                'password' => Hash::make('gooiky-wp22'),
+                'profile_photo_path' => 'assets/images/profile_photos/gooiKhaiYi.png',
+                'email_verified_at' => null,
+            ],
+            [
+                'name' => 'Leong Kai Bin',
+                'email' => 'leongkb-pm23@student.tarc.edu.my',
+                'phone' => fake()->unique()->phoneNumber(),
+                'password' => Hash::make('leongkb-pm23'),
+                'profile_photo_path' => 'assets/images/profile_photos/default_pfp.jpg',
+                'email_verified_at' => null,
+            ],
+            [
+                'name' => 'Liang Zen Yin',
+                'email' => 'liangzy-pm23@student.tarc.edu.my',
+                'phone' => fake()->unique()->phoneNumber(),
+                'password' => Hash::make('liangzy-pm23'),
+                'profile_photo_path' => 'assets/images/profile_photos/default_pfp.jpg',
+                'email_verified_at' => null,
+            ],
+            [
+                'name' => 'Teh Jyy Jiun',
+                'email' => 'tehjj-pm23@student.tarc.edu.my',
+                'phone' => fake()->unique()->phoneNumber(),
+                'password' => Hash::make('tehjj-pm23'),
+                'profile_photo_path' => 'assets/images/profile_photos/default_pfp.jpg',
+                'email_verified_at' => null,
+            ],
+            [
+                'name' => 'Soon Yen Teng',
+                'email' => 'soonyt-pm23@student.tarc.edu.my',
+                'phone' => fake()->unique()->phoneNumber(),
+                'password' => Hash::make('soonyt-pm23'),
+                'profile_photo_path' => 'assets/images/profile_photos/default_pfp.jpg',
+                'email_verified_at' => null,
+            ],
+            [
+                'name' => 'Ong Chin Wei',
+                'email' => 'ongcw-pm23@student.tarc.edu.my',
+                'phone' => fake()->unique()->phoneNumber(),
+                'password' => Hash::make('ongcw-pm23'),
+                'profile_photo_path' => 'assets/images/profile_photos/default_pfp.jpg',
+                'email_verified_at' => null,
+            ],
+            [
+                'name' => 'Lim Jia Ying',
+                'email' => 'limjy-pm23@student.tarc.edu.my',
+                'phone' => fake()->unique()->phoneNumber(),
+                'password' => Hash::make('limjy-pm23'),
+                'profile_photo_path' => 'assets/images/profile_photos/default_pfp.jpg',
+                'email_verified_at' => null,
+            ],
+        ];
     }
 
 }
