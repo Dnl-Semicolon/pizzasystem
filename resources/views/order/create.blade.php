@@ -17,18 +17,40 @@
                             <div class="md:col-span-5">
                                 <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-100 mb-4">Menu</h3>
 
+                                {{-- Category Navigation Pills --}}
+                                <nav role="tablist" class="flex flex-wrap gap-2 mb-6 border-b border-gray-200 dark:border-gray-700 pb-4">
+                                    <button role="tab" aria-selected="true" data-category="all" class="category-pill px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 bg-blue-600 text-white">
+                                        All
+                                    </button>
+                                    <button role="tab" aria-selected="false" data-category="pizza" class="category-pill px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600">
+                                        Pizza
+                                    </button>
+                                    <button role="tab" aria-selected="false" data-category="drink" class="category-pill px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600">
+                                        Drinks
+                                    </button>
+                                    <button role="tab" aria-selected="false" data-category="side" class="category-pill px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600">
+                                        Sides
+                                    </button>
+                                    <button role="tab" aria-selected="false" data-category="desserts" class="category-pill px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600">
+                                        Desserts
+                                    </button>
+                                </nav>
+
                                 {{-- Grouped by type --}}
                                 @php
                                     /**
                                      * @var $products
                                      */
                                     $grouped = $products->groupBy('type');
+                                    $allCategories = ['pizza', 'drink', 'side', 'desserts'];
                                 @endphp
 
-                                @foreach ($grouped as $type => $group)
-                                    <h4 class="text-md font-bold text-gray-600 dark:text-gray-300 mt-6 mb-2 capitalize">{{ $type }}</h4>
-                                    <div class="grid lg:grid-cols-2 gap-4">
-                                        @foreach ($group as $product)
+                                @foreach ($allCategories as $category)
+                                    <section id="{{ $category }}" data-category="{{ $category }}" class="category-section">
+                                        <h4 class="text-md font-bold text-gray-600 dark:text-gray-300 mt-6 mb-2 capitalize">{{ $category }}</h4>
+                                        @if(isset($grouped[$category]) && $grouped[$category]->count() > 0)
+                                            <div class="grid lg:grid-cols-2 gap-4">
+                                                @foreach ($grouped[$category] as $product)
                                             <div class="border border-gray-300 dark:border-gray-400 rounded-lg p-4 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow">
                                                 <img src="{{ $product->image_url ? asset($product->image_url) : 'https://placehold.co/600x400.png' }}" alt="">
                                                 <div class="font-semibold text-lg mb-1">{{ $product->name }}</div>
@@ -82,8 +104,14 @@
                                                     </div>
                                                 @endif
                                             </div>
-                                        @endforeach
-                                    </div>
+                                                @endforeach
+                                            </div>
+                                        @else
+                                            <div class="text-center py-8 text-gray-500 dark:text-gray-400">
+                                                <p class="text-sm">Coming soon...</p>
+                                            </div>
+                                        @endif
+                                    </section>
                                 @endforeach
                             </div>
 
@@ -192,6 +220,80 @@
         const pizzaData = @json($pizzasWithPrices);
 
         const cartContainer = document.getElementById('order-cart');
+
+        // Category filtering functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const categoryPills = document.querySelectorAll('.category-pill');
+            const categorySections = document.querySelectorAll('.category-section');
+
+            // Function to set active pill styles
+            function setActivePill(activePill) {
+                categoryPills.forEach(pill => {
+                    pill.setAttribute('aria-selected', 'false');
+                    pill.className = pill.className.replace(/bg-blue-600 text-white/g, 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600');
+                });
+
+                activePill.setAttribute('aria-selected', 'true');
+                activePill.className = activePill.className.replace(/bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600/g, 'bg-blue-600 text-white font-bold');
+            }
+
+            // Function to show/hide sections based on category
+            function filterSections(category) {
+                categorySections.forEach(section => {
+                    if (category === 'all') {
+                        section.style.display = 'block';
+                    } else {
+                        const sectionCategory = section.getAttribute('data-category');
+                        section.style.display = sectionCategory === category ? 'block' : 'none';
+                    }
+                });
+            }
+
+            // Handle pill clicks
+            categoryPills.forEach(pill => {
+                pill.addEventListener('click', function() {
+                    const category = this.getAttribute('data-category');
+
+                    setActivePill(this);
+                    filterSections(category);
+
+                    // Update URL hash for deep linking
+                    if (category === 'all') {
+                        history.replaceState(null, null, window.location.pathname + window.location.search);
+                    } else {
+                        window.location.hash = category;
+                    }
+                });
+            });
+
+            // Handle deep linking on page load
+            function handleDeepLink() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const categoryParam = urlParams.get('category');
+                const hashCategory = window.location.hash.replace('#', '');
+
+                let targetCategory = 'all';
+
+                if (hashCategory && ['pizza', 'drinks', 'side', 'desserts'].includes(hashCategory)) {
+                    targetCategory = hashCategory;
+                } else if (categoryParam && ['pizza', 'drinks', 'side', 'desserts'].includes(categoryParam)) {
+                    targetCategory = categoryParam;
+                }
+
+                // Find and activate the correct pill
+                const targetPill = document.querySelector(`[data-category="${targetCategory}"]`);
+                if (targetPill) {
+                    setActivePill(targetPill);
+                    filterSections(targetCategory);
+                }
+            }
+
+            // Initialize deep linking
+            handleDeepLink();
+
+            // Handle browser back/forward navigation
+            window.addEventListener('hashchange', handleDeepLink);
+        });
 
         // document.querySelectorAll('.add-product-btn').forEach(btn => {
         //     btn.addEventListener('click', () => {
