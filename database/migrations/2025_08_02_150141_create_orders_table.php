@@ -14,8 +14,17 @@ return new class extends Migration
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->string('customer_name');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade')->nullable();
             $table->decimal('total_amount', 8, 2);
-            $table->string('status');
+            $table->integer('subtotal_cents')->nullable();
+            $table->integer('discount_cents')->nullable();
+            $table->integer('tax_cents')->nullable();
+            $table->integer('delivery_cents')->nullable();
+            $table->integer('rounding_cents')->nullable();
+            $table->integer('grand_total_cents')->nullable();
+            $table->integer('paid_total_cents')->nullable();
+            $table->enum('status', ['draft', 'pending_payment', 'paid', 'cancelled'])->nullable();
+            $table->timestamp('paid_at')->nullable();
             $table->timestamps();
         });
     }

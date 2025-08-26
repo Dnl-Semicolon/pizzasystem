@@ -15,8 +15,9 @@ class OrderSeeder extends Seeder
     {
         Order::factory()->create([
             'customer_name' => 'Daniel Tan',
+            'user_id' => 1,
             'total_amount' => 153.27,
-            'status' => 'processing',
+            'status' => 'draft',
         ]);
     }
 }

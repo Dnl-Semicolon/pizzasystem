@@ -110,7 +110,7 @@ class CartController extends Controller
                 ->values()
                 ->all();
 
-            foreach ($cart as &$item) {
+            foreach ($cart as $item) {
                 $itemToppings = collect(json_decode($item['toppingsNames'], true))
                     ->sortBy('name')
                     ->values()

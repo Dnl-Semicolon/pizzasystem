@@ -18,8 +18,9 @@ class OrderFactory extends Factory
     {
         return [
             'customer_name' => 'Placeholder Customer',
+            'user_id' => 1,
             'total_amount' => 0.00,
-            'status' => 'pending',
+            'status' => 'draft',
         ];
     }
 }

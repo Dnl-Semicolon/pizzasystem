@@ -17,12 +17,28 @@ class Order extends Model
 
     protected $fillable = [
         'customer_name',
+        'user_id',
         'total_amount',
+        'subtotal_cents',
+        'discount_cents',
+        'tax_cents',
+        'delivery_cents',
+        'rounding_cents',
+        'grand_total_cents',
+        'paid_total_cents',
         'status',
+        'paid_at',
     ];
 
     public function items(): HasMany
     {
         return $this->hasMany(OrderItem::class, 'order_id');
+    }
+
+    public function getAmountDueCentsAttribute(): int {
+        return max($this->grand_total_cents - $this->paid_total_cents, 0);
+    }
+    public function getIsPaidAttribute(): bool {
+        return $this->getAmountDueCentsAttribute() === 0;
     }
 }

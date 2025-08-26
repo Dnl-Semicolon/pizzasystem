@@ -174,4 +174,11 @@ class OrderController extends Controller
     {
         //
     }
+
+    public function receipt(Order $order)
+    {
+        dump($order);
+        dd($order);
+//        return view('order.receipt', compact('order'));
+    }
 }

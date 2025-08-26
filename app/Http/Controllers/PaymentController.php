@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Domain\Orders\Payment\OrderPayable;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\PizzaOrderItemDetail;
 use App\Models\PizzaOrderItemTopping;
 use App\Models\Pizza;
-use App\Models\PizzaSize;
-use App\Models\Crust;
 use App\Helpers\CartHelper;
+use App\Payments\PaymentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -128,5 +128,27 @@ class PaymentController extends Controller
         ]);
 
         return view('payment.confirm', compact('order'));
+    }
+
+    public function collect(Order $order, Request $request, PaymentService $service)
+    {
+        $request->validate([
+            'method' => 'required|in:cash,card,ewallet,online_banking',
+        ]);
+
+        $payable = new OrderPayable($order);
+        $payload = $request->only(['card_last4','approval_code','ewallet_txnid']);
+        $key = hash('sha256', "{$order->id}|{$request->user()?->id}|{$request->string('method')}|{$order->updated_at}");
+
+        $result = $service->collect(method: $request->string('method'), payable: $payable, payload: $payload, key: $key);
+
+        if ($result->isSucceeded()) {
+            return to_route('orders.receipt', $order);
+        }
+        if ($result->isRequiresAction()) {
+            return view('payment.qr_or_redirect', ['result' => $result, 'order' => $order]);
+        }
+
+        return back()->withErrors(['payment' => $result->message]);
     }
 }

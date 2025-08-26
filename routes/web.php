@@ -115,4 +115,6 @@ Route::get('/admin/orders', [AdminOrderController::class, 'index'])->name('admin
 Route::get('/admin/orders/{order}', [AdminOrderController::class, 'show'])->name('admin.orders.show');
 Route::patch('/admin/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('admin.orders.update-status');
 
+Route::get('/receipt', [OrderController::class, 'receipt'])->name('orders.receipt');
+
 require __DIR__.'/auth.php';

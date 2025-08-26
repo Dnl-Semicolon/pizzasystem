@@ -122,7 +122,7 @@
                                                 'inline-flex rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset text-gray-700 ring-gray-300 bg-gray-50' => $order->status === 'out_for_delivery',
                                                 'inline-flex rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset text-blue-700 ring-blue-300 bg-blue-50' => $order->status === 'preparing',
                                                 'inline-flex rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset text-green-700 ring-green-300 bg-green-50' => $order->status === 'delivered',
-                                                'inline-flex rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset text-amber-700 ring-amber-300 bg-amber-50' => $order->status === 'processing',
+                                                'inline-flex rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset text-amber-700 ring-amber-300 bg-amber-50' => $order->status === 'draft',
                                             ])>
                                             {{ ucfirst($order->status) }}
                                         </span>

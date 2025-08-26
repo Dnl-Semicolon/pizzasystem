@@ -2,6 +2,11 @@
 
 namespace App\Providers;
 
+use App\Payments\PaymentRegistry;
+use App\Payments\Methods\CashMethod;
+use App\Payments\Methods\CardMethod;
+use App\Payments\Methods\EwalletMethod;
+use App\Payments\Methods\OnlineBankingMethod;
 use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Http\Request;
 use Illuminate\Support\ServiceProvider;
@@ -13,7 +18,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(PaymentRegistry::class, function ($app) {
+            return (new PaymentRegistry)
+                ->register('cash', $app->make(CashMethod::class))
+                ->register('card', $app->make(CardMethod::class))
+                ->register('ewallet', $app->make(EwalletMethod::class))
+                ->register('online_banking', $app->make(OnlineBankingMethod::class));
+        });
     }
 
     /**
