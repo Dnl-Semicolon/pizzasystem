@@ -72,11 +72,22 @@ class OrderController extends Controller
         // 3. Create an order
         $order = Order::create([
             'customer_name' => Auth::user()->name,
+            'user_id' => Auth::user()->id,
             'total_amount' => 0.00, // Will calculate below
-            'status' => 'processing',
+            'subtotal_cents' => 0, // Will calculate below
+            'discount_cents' => 0, // Will calculate below
+            'tax_cents' => 0, // Will calculate below
+            'delivery_cents' => 0, // Will calculate below
+            'rounding_cents' => 0, // Will calculate below
+            'grand_total_cents' => 0, // Will calculate below
+            'paid_total_cents' => 0, // Will calculate below
+            'status' => 'draft',
+            'paid_at' => null,
         ]);
 
         $grandTotal = 0;
+        $subtotalCents = 0;
+        $deliveryFeeCents = 500;
 
         foreach ($cart as $item) {
 
@@ -101,6 +112,7 @@ class OrderController extends Controller
             $orderItem->save();
 
             $grandTotal += $item['total_price'];
+            $subtotalCents += (int) round($item * 100);
 
             // If it's a pizza, add detail + toppings
             if ($item['type'] === 'pizza') {
@@ -126,6 +138,9 @@ class OrderController extends Controller
             }
         }
 
+        $order->discount_cents = $deliveryFeeCents;
+        $order->subtotal_cents = $subtotalCents;
+        $order->grand_total_cents = $order->discount_cents + $order->subtotal_cents;
         $order->total_amount = $grandTotal;
         $order->save();
 

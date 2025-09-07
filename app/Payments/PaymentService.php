@@ -2,12 +2,15 @@
 
 namespace App\Payments;
 
+// pizzasystem/app/Payments/PaymentService.php
+
 use App\Payments\Contracts\Payable;
 use App\Payments\Contracts\PaymentMethod;
 use App\Payments\DTOs\PaymentResult;
 use App\Models\PaymentAttempt;
 use App\Models\Payment;
 use App\Payments\Events\PaymentCaptured;
+use App\Payments\Listeners\UpdateOrderOnPaymentCaptured;
 
 final class PaymentService
 {
@@ -36,7 +39,7 @@ final class PaymentService
             'status' => $result->status,
             'error_code' => $result->errorCode,
             'error_message' => $result->message,
-            'raw' => $result->meta,
+            'raw' => json_encode($result->meta),
         ]);
 
         if ($result->isSucceeded()) {
@@ -49,11 +52,15 @@ final class PaymentService
                 'status' => 'captured',
                 'captured_at' => now(),
                 'reference' => $result->reference,
-                'meta' => $result->meta,
+                'meta' => json_encode($result->meta),
             ]);
 
             // bump order & fire event (listener updates paid_total/status)
             event(new PaymentCaptured($payment));
+
+            // Explicitly trigger listener as fallback for event system issues
+            $listener = app(UpdateOrderOnPaymentCaptured::class);
+            $listener->handle(new PaymentCaptured($payment));
         }
 
         return $result;

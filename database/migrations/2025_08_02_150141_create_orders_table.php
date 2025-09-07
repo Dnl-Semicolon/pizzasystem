@@ -1,5 +1,7 @@
 <?php
-
+/**
+ * pizzasystem/database/migrations/2025_08_02_150141_create_orders_table.php
+ * */
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -13,18 +15,17 @@ return new class extends Migration
     {
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
-            $table->string('customer_name');
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade')->nullable();
-            $table->decimal('total_amount', 8, 2);
-            $table->integer('subtotal_cents')->nullable();
-            $table->integer('discount_cents')->nullable();
-            $table->integer('tax_cents')->nullable();
-            $table->integer('delivery_cents')->nullable();
-            $table->integer('rounding_cents')->nullable();
-            $table->integer('grand_total_cents')->nullable();
-            $table->integer('paid_total_cents')->nullable();
-            $table->enum('status', ['draft', 'pending_payment', 'paid', 'cancelled'])->nullable();
-            $table->timestamp('paid_at')->nullable();
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->integer('subtotal_cents');
+            $table->integer('discount_cents');
+            $table->integer('tax_cents');
+            $table->integer('delivery_cents');
+            $table->integer('rounding_cents');
+            $table->integer('grand_total_cents');
+            $table->integer('paid_total_cents');
+            $table->enum('status', ['draft', 'pending_payment', 'paid', 'cancelled']);
+            $table->enum('previous_status', ['draft', 'pending_payment', 'paid', 'cancelled'])->nullable();
+            $table->timestamp('paid_at')->nullable()->default(null);
             $table->timestamps();
         });
     }

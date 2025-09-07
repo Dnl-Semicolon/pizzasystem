@@ -10,145 +10,213 @@ use App\Models\PizzaOrderItemTopping;
 use App\Models\Pizza;
 use App\Helpers\CartHelper;
 use App\Payments\PaymentService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class PaymentController extends Controller
 {
+    public function choose(Request $request)
+    {
+        $request->validate([
+            'payment_method' => 'required|in:cash,card,ewallet,online_banking',
+        ]);
+        session(['payment.method' => $request->string('payment_method')]);
+        return redirect()->route('payment.method', $request->string('payment_method'));
+    }
+
+    public function method(string $method)
+    {
+        if (!in_array($method, ['cash','card','ewallet','online_banking'], true)) {
+            return redirect()->route('payment.index')->with('error', 'Invalid payment method.');
+        }
+
+        if (CartHelper::isCartEmpty()) {
+            return redirect()->route('order.create')->with('error', 'Your cart is empty.');
+        }
+
+        if (!session()->has('checkout')) {
+            return redirect()->route('order.create')->with('error', 'Please complete checkout first.');
+        }
+
+        $hydratedCart = CartHelper::getHydratedCart();
+        $subtotal = CartHelper::getCartTotal();
+        $deliveryFee = 5.00;
+        $grandTotal = $subtotal + $deliveryFee;
+
+        return view("payment.methods.$method", [
+            'cart' => $hydratedCart,
+            'subtotal' => $subtotal,
+            'deliveryFee' => $deliveryFee,
+            'grandTotal' => $grandTotal,
+        ]);
+    }
+
+    public function process(Request $request, string $method, PaymentService $payments)
+    {
+        // Ensure cart and checkout exist
+        $cart = session()->get('cart', []);
+        $checkout = session()->get('checkout', []);
+
+        if (empty($cart)) {
+            return redirect()->route('order.create')->with('error', 'Your cart is empty.');
+        }
+
+        if (empty($checkout)) {
+            return redirect()->route('order.create')->with('error', 'Please complete checkout first.');
+        }
+
+        // Validate payment method
+        if (!in_array($method, ['cash','card','ewallet','online_banking'], true)) {
+            return redirect()->route('payment.index')->with('error', 'Invalid payment method.');
+        }
+
+        // Validate payment form data
+        $payload = $this->buildPayload($request, $method);
+        if ($payload instanceof RedirectResponse) {
+            return $payload; // validation failed
+        }
+
+        // NOW create the order (right before payment attempt)
+        $grandTotalCents = collect($cart)->sum(fn($item) => $item['price'] * $item['quantity'] * 100);
+
+        $order = Order::create([
+            'user_id' => auth()->id(),
+            'subtotal_cents' => $grandTotalCents,
+            'discount_cents' => 0,
+            'tax_cents' => 0,
+            'delivery_cents' => 0,
+            'rounding_cents' => 0,
+            'grand_total_cents' => $grandTotalCents,
+            'paid_total_cents' => 0,
+            'status' => 'pending_payment',
+            'previous_status' => null,
+            'paid_at' => null,
+        ]);
+
+        // Create order items
+        foreach($cart as $item) {
+            $order->items()->create([
+                'product_id' => $item['product_id'],
+                'quantity' => $item['quantity'],
+                'price' => $item['price']
+            ]);
+        }
+
+        // Attempt payment
+        $payable = new OrderPayable($order);
+        $key = hash('sha256', "{$order->id}|{$request->ip()}|".auth()->id()."|{$method}|{$order->updated_at}");
+
+        $result = $payments->collect($method, $payable, $payload, $key);
+
+        if ($result->isSucceeded()) {
+            // Payment successful - clear sessions and redirect to receipt
+            session()->forget(['cart', 'checkout', 'payment.method']);
+            return redirect()->route('payments.receipt', $order)->with('success', 'Payment successful!');
+        }
+
+        // Payment failed - order remains for retry, but show error
+        return back()->withErrors(['payment' => $result->message ?? 'Payment failed. Please try again.'])->withInput();
+    }
+
+    private function buildPayload(Request $req, string $method): array|RedirectResponse
+    {
+        switch ($method) {
+            case 'cash':
+                // No extra fields; delivery/contact already captured in checkout.
+                return [];
+
+            case 'card':
+                // Minimal, fake validation (never store PAN/CVV)
+                $req->validate([
+                    'card_name'   => 'required|string|max:80',
+                    'card_number' => 'required|string',
+                    'exp'         => 'required|string',
+                    'cvv'         => 'required|string|max:4',
+                ]);
+
+                $panRaw = preg_replace('/\D+/', '', (string)$req->input('card_number'));
+//                if (!$this->luhnOk($panRaw)) {
+//                    return back()->withErrors(['payment' => 'Card number is invalid.'])->withInput();
+//                }
+                if (!preg_match('/^(0[1-9]|1[0-2])\/(\d{2})$/', $req->string('exp'))) {
+                    return back()->withErrors(['payment' => 'Expiry must be MM/YY.'])->withInput();
+                }
+
+                return [
+                    'card_last4' => substr($panRaw, -4),
+                    'brand'      => $this->guessBrand($panRaw),
+                    'card_name'  => $req->string('card_name'),
+                    'note'       => $req->string('note'),
+                ];
+
+            case 'ewallet':
+            case 'online_banking':
+                $req->validate([
+                    // example: bank selection or wallet provider, keep it minimal
+                    'provider' => 'nullable|string|max:50',
+                ]);
+                return ['provider' => $req->string('provider')];
+
+            default:
+                return back()->withErrors(['payment' => 'Unsupported method.']);
+        }
+    }
+
+    // --- helpers ---
+    private function luhnOk(string $pan): bool
+    {
+        $sum = 0; $alt = false;
+        for ($i = strlen($pan)-1; $i >= 0; $i--) {
+            $n = (int)$pan[$i];
+            if ($alt) { $n *= 2; if ($n > 9) $n -= 9; }
+            $sum += $n; $alt = !$alt;
+        }
+        return $sum % 10 === 0;
+    }
+
+    private function guessBrand(string $pan): string
+    {
+        return match (true) {
+            preg_match('/^4\d{12,18}$/', $pan)   => 'VISA',
+            preg_match('/^5[1-5]\d{14}$/', $pan) => 'MASTERCARD',
+            preg_match('/^3[47]\d{13}$/', $pan)  => 'AMEX',
+            default                              => 'CARD',
+        };
+    }
+
+    public function receipt(Order $order)
+    {
+        // Load latest payment for method/reference display if you want
+        $order->load(['payments' => fn($q) => $q->latest()]);
+        return view('payment.receipt', compact('order'));
+    }
+
     /**
      * Display the payment page.
      */
     public function index()
     {
         if (CartHelper::isCartEmpty()) {
-            return redirect()->route('orders.create')->with('error', 'Your cart is empty.');
+            return redirect()->route('orders.create')->with('error', 'Your cart is empty. Please add items first.');
+        }
+
+        if (!session()->has('checkout')) {
+            return redirect()->route('order.create')
+                ->with('error', 'Please complete checkout form first.');
         }
 
         $hydratedCart = CartHelper::getHydratedCart();
-
-        return view('payment.index', ['cart' => $hydratedCart]);
-    }
-
-    /**
-     * Process the payment and create order.
-     */
-    public function process(Request $request)
-    {
-        $request->validate([
-            'payment_method' => 'required|in:card,fpx,cod',
-        ]);
-
-        $cart = session('cart', []);
-
-        if (empty($cart)) {
-            return redirect()->route('orders.create')->with('error', 'Your cart is empty.');
-        }
-
-        // Calculate total amount
-        $subtotal = 0;
-        foreach ($cart as $item) {
-            $subtotal += ($item['unit_price'] ?? $item['total_price'] ?? 0) * ($item['quantity'] ?? 1);
-        }
+        $subtotal = CartHelper::getCartTotal();
         $deliveryFee = 5.00;
         $grandTotal = $subtotal + $deliveryFee;
 
-        // Create order
-        $order = Order::create([
-            'customer_name' => Auth::user()->name ?? 'Guest',
-            'total_amount' => $grandTotal,
-            'status' => 'processing',
-            'payment_method' => $request->payment_method,
+        return view('payment.index', [
+            'cart' => $hydratedCart,
+            'subtotal' => $subtotal,
+            'deliveryFee' => $deliveryFee,
+            'grandTotal' => $grandTotal,
         ]);
-
-        // Create order items
-        foreach ($cart as $item) {
-            $pizza = null;
-            $productId = null;
-
-            if ($item['type'] === 'pizza') {
-                $pizza = Pizza::with('product')->find($item['pizza_id']);
-                $productId = $pizza?->product_id ?? null;
-            } elseif ($item['type'] === 'product') {
-                $productId = $item['product_id'];
-            }
-
-            $orderItem = new OrderItem([
-                'order_id' => $order->id,
-                'product_id' => $productId,
-                'quantity' => $item['quantity'],
-                'unit_price' => $item['unit_price'],
-                'final_price' => $item['total_price'],
-            ]);
-            $orderItem->save();
-
-            // Add pizza details if applicable
-            if ($item['type'] === 'pizza') {
-                PizzaOrderItemDetail::create([
-                    'order_item_id' => $orderItem->id,
-                    'pizza_size_id' => $item['size_id'],
-                    'crust_id' => $item['crust_id'],
-                    'base_price' => $item['base_price'],
-                    'crust_addition' => $item['add_on'],
-                    'toppings_total' => $item['toppings_total'],
-                ]);
-
-                // Add toppings
-                if (!empty($item['toppings'])) {
-                    foreach ($item['toppings'] as $toppingString) {
-                        [$toppingId, $toppingPrice] = explode('-', $toppingString);
-                        PizzaOrderItemTopping::create([
-                            'order_item_id' => $orderItem->id,
-                            'topping_id' => $toppingId,
-                            'topping_price' => $toppingPrice,
-                        ]);
-                    }
-                }
-            }
-        }
-
-        // Clear cart
-        session()->forget('cart');
-        session()->forget('checkout');
-
-        return redirect()->route('payment.confirm', $order->id)
-            ->with('success', 'Payment processed successfully!');
-    }
-
-    /**
-     * Display order confirmation page.
-     */
-    public function confirm(Order $order): View
-    {
-        $order->load([
-            'items.product',
-            'items.pizzaDetails.size',
-            'items.pizzaDetails.crust',
-            'items.toppings.topping'
-        ]);
-
-        return view('payment.confirm', compact('order'));
-    }
-
-    public function collect(Order $order, Request $request, PaymentService $service)
-    {
-        $request->validate([
-            'method' => 'required|in:cash,card,ewallet,online_banking',
-        ]);
-
-        $payable = new OrderPayable($order);
-        $payload = $request->only(['card_last4','approval_code','ewallet_txnid']);
-        $key = hash('sha256', "{$order->id}|{$request->user()?->id}|{$request->string('method')}|{$order->updated_at}");
-
-        $result = $service->collect(method: $request->string('method'), payable: $payable, payload: $payload, key: $key);
-
-        if ($result->isSucceeded()) {
-            return to_route('orders.receipt', $order);
-        }
-        if ($result->isRequiresAction()) {
-            return view('payment.qr_or_redirect', ['result' => $result, 'order' => $order]);
-        }
-
-        return back()->withErrors(['payment' => $result->message]);
     }
 }

@@ -1,402 +1,256 @@
-<x-app-layout>
+<x-payment-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Payment') }}
-        </h2>
+        {{ __('Choose Payment Method') }}
     </x-slot>
 
-    <div class="py-6 pb-24">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-                <!-- Main Content -->
-                <div class="lg:col-span-2 space-y-6">
-
-                    <!-- Review & Pay Panel -->
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                        <div class="flex items-center justify-between mb-6">
-                            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Review & Pay</h3>
-                            <a href="{{ route('checkout.index') }}" class="text-green-600 hover:text-green-700 text-sm font-medium">
-                                Edit
-                            </a>
+    <div class="py-8">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="bg-white rounded-xl shadow-lg border border-gray-200">
+                <div class="p-12">
+                    @if(session('error'))
+                        <div class="mb-6 p-4 bg-red-50 text-red-800 rounded-lg border border-red-200">
+                            <i class="fas fa-exclamation-triangle mr-2"></i>
+                            {{ session('error') }}
                         </div>
+                    @endif
 
-                        @php
-                            $checkout = session('checkout', []);
-                        @endphp
-
-                        <!-- Address Summary -->
-                        <div class="mb-6">
-                            <h4 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
-                                @if($checkout['delivery_mode'] === 'pickup')
-                                    Pickup Details
-                                @else
-                                    Delivery Address
-                                @endif
-                            </h4>
-                            <div class="text-sm text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-900 p-3 rounded-md">
-{{--                                <div class="font-medium">{{ $checkout['contact_name']  }}</div>--}}
-                                @if($checkout['delivery_mode'] === 'pickup')
-                                    <div class="mt-2 text-blue-600 dark:text-blue-400">
-                                        <strong>Pickup Location:</strong><br>
-{{--                                        Pizza Palace Main Store<br>--}}
-{{--                                        123 Food Court, Jalan Makan<br>--}}
-{{--                                        10450 George Town, Penang--}}
-                                    </div>
-                                @else
-                                    <div>{{ $checkout['addr1'] ?? 'N/A' }},</div>
-                                    @if(!empty($checkout['addr2']))
-                                        <div>{{ $checkout['addr2'] }},</div>
-                                    @endif
-                                    <div>{{ $checkout['postcode'] ?? 'N/A' }} {{ $checkout['city'] ?? 'N/A' }}, {{ $checkout['state'] ?? 'N/A' }}</div>
-                                @endif
-{{--                                <div class="mt-1">Phone: {{ $checkout['contact_phone'] ?? 'N/A' }}</div>--}}
-                                @if(!empty($checkout['delivery_notes']))
-                                    <div class="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                                        <strong>Notes:</strong> {{ $checkout['delivery_notes'] }}
-                                    </div>
-                                @endif
-                            </div>
-                        </div>
-
-                        <!-- Contact Summary -->
-                        <div>
-                            <h4 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Contact Details</h4>
-                            <div class="text-sm text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-900 p-3 rounded-md">
-                                <div>Name: {{$checkout['contact_name'] ?? 'N/A'}}</div>
-                                @if(!empty($checkout['contact_email']))
-                                    <div>Email: {{ $checkout['contact_email'] }}</div>
-                                @endif
-                                <div>Phone: {{ $checkout['contact_phone'] ?? 'N/A' }}</div>
-                            </div>
-                        </div>
+                    <!-- Back to Checkout Button -->
+                    <div class="mb-8">
+                        <a href="{{ route('checkout.index') }}" class="inline-flex items-center space-x-2 text-gray-600 hover:text-purple-700 hover:bg-purple-50 px-3 py-2 rounded-lg transition-all duration-200 group">
+                            <i class="fas fa-arrow-left group-hover:-translate-x-1 transition-transform duration-200"></i>
+                            <span>Back to Checkout</span>
+                        </a>
                     </div>
 
-                    <!-- Payment Method -->
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-6">Payment Method</h3>
-
-                        <form id="payment-form" action="{{ route('payment.process') }}" method="POST" class="space-y-6">
-                            @csrf
-
-                            <!-- Payment Method Selection -->
-                            <div class="space-y-4">
-                                <div class="flex items-center">
-                                    <input type="radio" id="payment-card" name="payment_method" value="card" checked
-                                           class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
-                                    <label for="payment-card" class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300">
-                                        Credit/Debit Card
-                                    </label>
-                                </div>
-
-                                <div class="flex items-center">
-                                    <input type="radio" id="payment-fpx" name="payment_method" value="fpx"
-                                           class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
-                                    <label for="payment-fpx" class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300">
-                                        FPX Online Banking
-                                    </label>
-                                </div>
-
-                                <div class="flex items-center">
-                                    <input type="radio" id="payment-cod" name="payment_method" value="cod"
-                                           class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
-                                    <label for="payment-cod" class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300">
-                                        Cash on Delivery
-                                    </label>
-                                </div>
+                    <!-- Trust Indicators -->
+                    {{--<div class="mb-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div class="flex items-center justify-center space-x-6 text-sm">
+                            <div class="flex items-center space-x-2 text-blue-700">
+                                <i class="fas fa-shield-check"></i>
+                                <span class="font-medium">Bank-level security</span>
                             </div>
-
-                            <!-- Card Payment Form -->
-                            <div id="card-form" class="space-y-4 border-t border-gray-200 dark:border-gray-700 pt-6">
-                                <div>
-                                    <label for="cardholder_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                        Cardholder Name *
-                                    </label>
-                                    <input type="text" id="cardholder_name" name="cardholder_name" required
-                                           class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                           placeholder="Name as it appears on card">
-                                </div>
-
-                                <div>
-                                    <label for="card_number" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                        Card Number *
-                                    </label>
-                                    <input type="text" id="card_number" name="card_number" required maxlength="19"
-                                           class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                           placeholder="1234 5678 9012 3456">
-                                    <div class="text-xs text-gray-500 mt-1">16-digit card number</div>
-                                </div>
-
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label for="expiry_date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                            Expiry Date *
-                                        </label>
-                                        <input type="text" id="expiry_date" name="expiry_date" required maxlength="5"
-                                               class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                               placeholder="MM/YY">
-                                    </div>
-
-                                    <div>
-                                        <label for="cvc" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                            CVC *
-                                        </label>
-                                        <input type="text" id="cvc" name="cvc" required maxlength="4"
-                                               class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                               placeholder="123">
-                                        <div class="text-xs text-gray-500 mt-1">3-4 digit security code</div>
-                                    </div>
-                                </div>
+                            <div class="flex items-center space-x-2 text-blue-700">
+                                <i class="fas fa-clock"></i>
+                                <span class="font-medium">Instant processing</span>
                             </div>
-
-                            <!-- FPX Bank Selection -->
-                            <div id="fpx-form" class="hidden space-y-4 border-t border-gray-200 dark:border-gray-700 pt-6">
-                                <div>
-                                    <label for="bank_selection" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                        Select Your Bank *
-                                    </label>
-                                    <select id="bank_selection" name="bank_selection"
-                                            class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 shadow-sm focus:border-green-500 focus:ring-green-500">
-                                        <option value="">Choose your bank</option>
-                                        <option value="maybank">Maybank</option>
-                                        <option value="cimb">CIMB Bank</option>
-                                        <option value="public_bank">Public Bank</option>
-                                        <option value="rhb">RHB Bank</option>
-                                        <option value="hong_leong">Hong Leong Bank</option>
-                                        <option value="ambank">AmBank</option>
-                                        <option value="uob">UOB Bank</option>
-                                        <option value="ocbc">OCBC Bank</option>
-                                        <option value="hsbc">HSBC Bank</option>
-                                        <option value="standard_chartered">Standard Chartered</option>
-                                    </select>
-                                    <div class="text-xs text-gray-500 mt-1">You'll be redirected to your bank's secure login page</div>
-                                </div>
+                            <div class="flex items-center space-x-2 text-blue-700">
+                                <i class="fas fa-undo"></i>
+                                <span class="font-medium">30-day refund policy</span>
                             </div>
+                        </div>
+                    </div>--}}
 
-                            <!-- COD Information -->
-                            <div id="cod-info" class="hidden border-t border-gray-200 dark:border-gray-700 pt-6">
-                                <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md p-4">
-                                    <div class="flex">
-                                        <div class="flex-shrink-0">
-                                            <svg class="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
-                                            </svg>
-                                        </div>
-                                        <div class="ml-3">
-                                            <h3 class="text-sm font-medium text-yellow-800 dark:text-yellow-200">
-                                                Cash on Delivery
-                                            </h3>
-                                            <div class="mt-2 text-sm text-yellow-700 dark:text-yellow-300">
-                                                <ul class="list-disc pl-5 space-y-1">
-                                                    <li>Pay with cash when your order is delivered</li>
-                                                    <li>Please have exact change ready</li>
-                                                    <li>Delivery fee still applies</li>
-                                                    <li>Order confirmation will be sent via SMS/email</li>
-                                                </ul>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                        <!-- Order Summary -->
+                        <div class="space-y-6">
+                            <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                                <i class="fas fa-shopping-cart text-gray-600 mr-2"></i>
+                                Order Summary
+                            </h3>
+
+                            <div class="bg-gray-50 rounded-lg p-6 space-y-4">
+                                @foreach($cart as $item)
+                                    <div class="flex justify-between items-start py-3 border-b border-gray-200 last:border-b-0">
+                                        <div class="flex items-start space-x-4">
+                                            @if($item->type === 'pizza' && $item->pizza?->product?->image_url)
+                                                <img src="{{ $item->pizza->product->image_url }}"
+                                                     alt="{{ $item->product_name }}"
+                                                     class="w-16 h-16 rounded-lg object-cover">
+                                            @elseif($item->type === 'product' && $item->product?->image_url)
+                                                <img src="{{ $item->product->image_url }}"
+                                                     alt="{{ $item->product_name }}"
+                                                     class="w-16 h-16 rounded-lg object-cover">
+                                            @else
+                                                <div class="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center">
+                                                    <i class="fas fa-pizza-slice text-gray-400"></i>
+                                                </div>
+                                            @endif
+
+                                            <div class="flex-1 min-w-0">
+                                                <p class="font-medium text-gray-900">{{ $item->product_name }}</p>
+                                                @if($item->type === 'pizza')
+                                                    <p class="text-sm text-gray-500 mt-1">
+                                                        {{ $item->size?->name }} • {{ $item->crust?->name }}
+                                                        @if($item->toppings->count() > 0)
+                                                            <br>{{ $item->toppings->pluck('name')->join(', ') }}
+                                                        @endif
+                                                    </p>
+                                                @endif
+                                                <p class="text-sm text-gray-600 mt-1">Qty: {{ $item->quantity }}</p>
                                             </div>
                                         </div>
+                                        <p class="font-semibold text-gray-900">RM {{ number_format($item->total_price, 2) }}</p>
+                                    </div>
+                                @endforeach
+
+                                <div class="pt-4 border-t border-gray-300 space-y-2">
+                                    <div class="flex justify-between items-center text-gray-700">
+                                        <span>Subtotal</span>
+                                        <span>RM {{ number_format($subtotal, 2) }}</span>
+                                    </div>
+                                    <div class="flex justify-between items-center text-gray-700">
+                                        <span>Delivery Fee</span>
+                                        <span>RM {{ number_format($deliveryFee, 2) }}</span>
+                                    </div>
+                                    <div class="pt-2 border-t border-gray-300">
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-lg font-semibold text-gray-900">Total</span>
+                                            <span class="text-xl font-bold text-gray-900">RM {{ number_format($grandTotal, 2) }}</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
+                        </div>
 
-                        </form>
-                    </div>
+                        <!-- Payment Method Selection -->
+                        <div class="space-y-6">
+                            <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                                <i class="fas fa-credit-card text-gray-600 mr-2"></i>
+                                Payment Method
+                            </h3>
 
-                </div>
+                            <form method="POST" action="{{ route('payment.choose') }}" class="space-y-6">
+                                @csrf
 
-                <!-- Order Summary Sidebar -->
-                <div class="lg:col-span-1">
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 sticky top-6">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Order Summary</h3>
-
-                        @php
-                            $subtotal = 0;
-                        @endphp
-
-                        <!-- Order Items -->
-                        <div class="space-y-3 mb-4 max-h-48 overflow-y-auto">
-                            @forelse($cart as $item)
-                                @php
-                                    $itemTotal = $item->total_price;
-                                    $subtotal += $itemTotal;
-                                @endphp
-                                <div class="flex justify-between text-sm">
-                                    <div class="flex-1">
-                                        <div class="font-medium text-gray-900 dark:text-gray-100">
-                                            {{ $item->product_name }}
-                                        </div>
-                                        <div class="text-gray-500 dark:text-gray-400">
-                                            Qty: {{ $item->quantity }}
-                                            @if($item->type === 'pizza')
-                                                <br>{{ $item->size?->name ?? 'Unknown' }} {{ $item->crust?->name ?? 'Unknown' }}
-                                                @if($item->toppings && $item->toppings->count() > 0)
-                                                    <br>+ {{ $item->toppings->pluck('name')->join(', ') }}
-                                                @endif
-                                            @endif
-                                        </div>
+                                <div class="space-y-3">
+                                    <div class="relative">
+                                        <input type="radio" name="payment_method" value="card" id="card" class="sr-only" required>
+                                        <label for="card" class="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-purple-300 hover:bg-purple-50 transition-all duration-200">
+                                            <div class="flex items-center w-full">
+                                                <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+                                                    <i class="fas fa-credit-card text-blue-600"></i>
+                                                </div>
+                                                <div class="flex-1">
+                                                    <p class="font-medium text-gray-900">Credit/Debit Card</p>
+                                                    <p class="text-sm text-gray-500">Secure payment with your card</p>
+                                                </div>
+                                                <div class="w-5 h-5 border-2 border-gray-300 rounded-full flex items-center justify-center">
+                                                    <div class="w-2 h-2 bg-purple-600 rounded-full opacity-0 transition-opacity duration-200" id="card-dot"></div>
+                                                </div>
+                                            </div>
+                                        </label>
                                     </div>
-                                    <div class="font-medium text-gray-900 dark:text-gray-100">
-                                        RM {{ number_format($itemTotal, 2) }}
+
+                                    <div class="relative">
+                                        <input type="radio" name="payment_method" value="online_banking" id="banking" class="sr-only" required>
+                                        <label for="banking" class="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-purple-300 hover:bg-purple-50 transition-all duration-200">
+                                            <div class="flex items-center w-full">
+                                                <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-4">
+                                                    <i class="fas fa-university text-green-600"></i>
+                                                </div>
+                                                <div class="flex-1">
+                                                    <p class="font-medium text-gray-900">Online Banking</p>
+                                                    <p class="text-sm text-gray-500">Transfer from your bank account</p>
+                                                </div>
+                                                <div class="w-5 h-5 border-2 border-gray-300 rounded-full flex items-center justify-center">
+                                                    <div class="w-2 h-2 bg-purple-600 rounded-full opacity-0 transition-opacity duration-200" id="banking-dot"></div>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+
+                                    <div class="relative">
+                                        <input type="radio" name="payment_method" value="cash" id="cash" class="sr-only" required>
+                                        <label for="cash" class="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-purple-300 hover:bg-purple-50 transition-all duration-200">
+                                            <div class="flex items-center w-full">
+                                                <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center mr-4">
+                                                    <i class="fas fa-money-bill-wave text-yellow-600"></i>
+                                                </div>
+                                                <div class="flex-1">
+                                                    <p class="font-medium text-gray-900">Cash on Delivery</p>
+                                                    <p class="text-sm text-gray-500">Pay when you receive your order</p>
+                                                </div>
+                                                <div class="w-5 h-5 border-2 border-gray-300 rounded-full flex items-center justify-center">
+                                                    <div class="w-2 h-2 bg-purple-600 rounded-full opacity-0 transition-opacity duration-200" id="cash-dot"></div>
+                                                </div>
+                                            </div>
+                                        </label>
                                     </div>
                                 </div>
-                            @empty
-                                <div class="text-sm text-gray-500 dark:text-gray-400">No items in cart</div>
-                            @endforelse
+
+                                @error('payment_method')
+                                    <div class="text-red-600 text-sm bg-red-50 p-3 rounded-lg border border-red-200">
+                                        <i class="fas fa-exclamation-circle mr-2"></i>
+                                        {{ $message }}
+                                    </div>
+                                @enderror
+
+                                <button type="submit" class="purple-button w-full text-white py-4 px-8 rounded-lg font-bold text-lg flex items-center justify-center space-x-2 shadow-lg">
+                                    <span class="mono">Continue to Payment</span>
+                                    <i class="fas fa-arrow-right"></i>
+                                </button>
+                            </form>
                         </div>
+                    </div>
 
-                        @php
-                            $deliveryFee = 5.00;
-                            $grandTotal = $subtotal + $deliveryFee;
-                        @endphp
-
-                        <!-- Totals -->
-                        <div class="space-y-3 text-sm border-t border-gray-200 dark:border-gray-700 pt-4">
-                            <div class="flex justify-between">
-                                <span class="text-gray-600 dark:text-gray-400">Subtotal</span>
-                                <span class="text-gray-900 dark:text-gray-100">RM {{ number_format($subtotal, 2) }}</span>
+                    <!-- Payment Footer -->
+                    <div class="mt-12 pt-8 border-t border-gray-200">
+                        <div class="text-center space-y-4">
+                            {{--<div class="flex items-center justify-center space-x-8 text-gray-500">
+                                <div class="flex items-center space-x-2">
+                                    <i class="fab fa-cc-visa text-2xl text-blue-600"></i>
+                                    <i class="fab fa-cc-mastercard text-2xl text-red-500"></i>
+                                    <i class="fab fa-cc-amex text-2xl text-blue-700"></i>
+                                    <i class="fab fa-paypal text-2xl text-blue-600"></i>
+                                </div>
+                            </div>--}}
+                            <div class="flex items-center justify-center space-x-6 text-xs text-gray-500">
+                                {{--<div class="flex items-center space-x-1">
+                                    <i class="fas fa-lock"></i>
+                                    <span>256-bit SSL encryption</span>
+                                </div>
+                                <div class="w-1 h-1 bg-gray-300 rounded-full"></div>
+                                <div class="flex items-center space-x-1">
+                                    <i class="fas fa-shield-alt"></i>
+                                    <span>PCI DSS compliant</span>
+                                </div>
+                                <div class="w-1 h-1 bg-gray-300 rounded-full"></div>--}}
+                                <div class="flex items-center space-x-1">
+                                    <i class="fas fa-user-shield"></i>
+                                    <span>Your data is protected</span>
+                                </div>
                             </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-600 dark:text-gray-400">Delivery Fee</span>
-                                <span class="text-gray-900 dark:text-gray-100">RM {{ number_format($deliveryFee, 2) }}</span>
-                            </div>
-                            <hr class="border-gray-200 dark:border-gray-700">
-                            <div class="flex justify-between text-base font-semibold">
-                                <span class="text-gray-900 dark:text-gray-100">Total</span>
-                                <span class="text-gray-900 dark:text-gray-100">RM {{ number_format($grandTotal, 2) }}</span>
-                            </div>
+                            <p class="text-xs text-gray-400 mono">
+                                Powered by {{ config('app.name') }} • Payments processed securely
+                            </p>
                         </div>
                     </div>
                 </div>
-
             </div>
         </div>
     </div>
 
-    <!-- Sticky Bottom Bar -->
-    <div class="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-4 shadow-lg z-50">
-        <div class="max-w-4xl mx-auto flex items-center justify-center">
-            <button type="submit" form="payment-form" id="pay-now-btn" disabled
-                    class="w-full sm:w-auto inline-flex items-center justify-center px-8 py-3 bg-green-600 text-white font-medium rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                </svg>
-                Pay Now - RM {{ number_format($grandTotal, 2) }}
-            </button>
-        </div>
-    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const radioInputs = document.querySelectorAll('input[name="payment_method"]');
+            const labels = document.querySelectorAll('label[for^="card"], label[for^="banking"], label[for^="cash"]');
+            const dots = document.querySelectorAll('[id$="-dot"]');
 
-</x-app-layout>
+            radioInputs.forEach((input, index) => {
+                input.addEventListener('change', function() {
+                    // Reset all labels and dots
+                    labels.forEach(label => {
+                        label.classList.remove('border-purple-500', 'bg-purple-50');
+                        label.classList.add('border-gray-200');
+                    });
+                    dots.forEach(dot => {
+                        dot.classList.remove('opacity-100');
+                        dot.classList.add('opacity-0');
+                    });
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const paymentMethodRadios = document.querySelectorAll('input[name="payment_method"]');
-    const cardForm = document.getElementById('card-form');
-    const fpxForm = document.getElementById('fpx-form');
-    const codInfo = document.getElementById('cod-info');
-    const payNowBtn = document.getElementById('pay-now-btn');
-    const form = document.getElementById('payment-form');
+                    // Activate selected option
+                    if (this.checked) {
+                        const label = document.querySelector(`label[for="${this.id}"]`);
+                        const dot = document.getElementById(`${this.id}-dot`);
 
-    // Handle payment method changes
-    function handlePaymentMethodChange() {
-        const selectedMethod = document.querySelector('input[name="payment_method"]:checked').value;
+                        label.classList.remove('border-gray-200');
+                        label.classList.add('border-purple-500', 'bg-purple-50');
 
-        // Hide all forms
-        cardForm.classList.add('hidden');
-        fpxForm.classList.add('hidden');
-        codInfo.classList.add('hidden');
-
-        // Show relevant form
-        if (selectedMethod === 'card') {
-            cardForm.classList.remove('hidden');
-        } else if (selectedMethod === 'fpx') {
-            fpxForm.classList.remove('hidden');
-        } else if (selectedMethod === 'cod') {
-            codInfo.classList.remove('hidden');
-        }
-
-        validateForm();
-    }
-
-    // Form validation
-    function validateForm() {
-        const selectedMethod = document.querySelector('input[name="payment_method"]:checked').value;
-        let isValid = true;
-
-        if (selectedMethod === 'card') {
-            const cardFields = ['cardholder_name', 'card_number', 'expiry_date', 'cvc'];
-            cardFields.forEach(fieldName => {
-                const field = document.getElementById(fieldName);
-                if (!field.value.trim()) {
-                    isValid = false;
-                }
+                        dot.classList.remove('opacity-0');
+                        dot.classList.add('opacity-100');
+                    }
+                });
             });
-        } else if (selectedMethod === 'fpx') {
-            const bankSelect = document.getElementById('bank_selection');
-            if (!bankSelect.value) {
-                isValid = false;
-            }
-        }
-        // COD doesn't require additional validation
-
-        payNowBtn.disabled = !isValid;
-        return isValid;
-    }
-
-    // Format card number input
-    document.getElementById('card_number').addEventListener('input', function(e) {
-        let value = e.target.value.replace(/\s/g, '').replace(/[^0-9]/gi, '');
-        let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
-        if (formattedValue !== e.target.value) {
-            e.target.value = formattedValue;
-        }
-        validateForm();
-    });
-
-    // Format expiry date input
-    document.getElementById('expiry_date').addEventListener('input', function(e) {
-        let value = e.target.value.replace(/\D/g, '');
-        if (value.length >= 2) {
-            value = value.substring(0, 2) + '/' + value.substring(2, 4);
-        }
-        e.target.value = value;
-        validateForm();
-    });
-
-    // Format CVC input
-    document.getElementById('cvc').addEventListener('input', function(e) {
-        e.target.value = e.target.value.replace(/\D/g, '');
-        validateForm();
-    });
-
-    // Event listeners
-    paymentMethodRadios.forEach(radio => {
-        radio.addEventListener('change', handlePaymentMethodChange);
-    });
-
-    // Listen for input changes on card form
-    cardForm.addEventListener('input', validateForm);
-    fpxForm.addEventListener('change', validateForm);
-
-    // Handle form submission
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
-
-        if (!validateForm()) {
-            alert('Please fill in all required fields.');
-            return;
-        }
-
-        // Simulate payment processing
-        payNowBtn.innerHTML = '<svg class="animate-spin w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Processing...';
-        payNowBtn.disabled = true;
-
-        // Submit the form normally
-        form.submit();
-    });
-
-    // Initial setup
-    handlePaymentMethodChange();
-});
-</script>
-
-<!-- TODO: integrate Strategy pattern later; TODO: basic client-side validation; TODO: on submit, simulate success and redirect to order confirmation -->
+        });
+    </script>
+</x-payment-layout>

@@ -71,9 +71,10 @@ Route::post('/cart/add', [CartController::class, 'addToCart'])->name('cart.add')
 Route::get('/checkout', [CheckoutController::class, 'index'])->middleware('auth')->name('checkout.index');
 Route::post('/checkout/save', [CheckoutController::class, 'store'])->middleware('auth')->name('checkout.store');
 
-Route::get('/payment', [PaymentController::class, 'index'])->name('payment.index');
+Route::post('/payment/prepare', [PaymentController::class, 'prepare'])->name('payment.prepare');
 Route::post('/payment', [PaymentController::class, 'process'])->name('payment.process');
 Route::get('/payment/confirm/{order}', [PaymentController::class, 'confirm'])->name('payment.confirm');
+Route::post('/orders/{order}/pay', [PaymentController::class, 'collect'])->name('payment.collect');
 
 
 Route::get('/pizzaSizes', [PizzaSizeController::class, 'index'])->name('pizzaSizes.index');
@@ -84,8 +85,6 @@ Route::get('/toppings', [ToppingController::class, 'index'])->name('toppings.ind
 Route::get('/pizzaSizePrices', [PizzaSizePriceController::class, 'index'])->name('pizzaSizePrices.index');
 Route::get('/crustPriceAdditions', [CrustPriceAdditionController::class, 'index'])->name('crustPriceAdditions.index');
 //Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
-Route::get('/menu', [OrderController::class, 'create'])->name('orders.create'); // public
-Route::post('/orders/store', [OrderController::class, 'store'])->middleware('auth')->name('orders.store');
 Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
 Route::get('/orderItems', [OrderItemController::class, 'index'])->name('orderItems.index');
 Route::get('/pizzaOrderItemDetails', [PizzaOrderItemDetailController::class, 'index'])->name('pizzaOrderItemDetails.index');
@@ -116,5 +115,30 @@ Route::get('/admin/orders/{order}', [AdminOrderController::class, 'show'])->name
 Route::patch('/admin/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('admin.orders.update-status');
 
 Route::get('/receipt', [OrderController::class, 'receipt'])->name('orders.receipt');
+
+
+
+
+
+
+
+
+// 1) Menu / Build Order
+Route::get('/menu', [OrderController::class, 'create'])->name('orders.create');
+Route::post('/orders/store', [OrderController::class, 'store'])
+    ->middleware('auth')
+    ->name('orders.store');
+
+
+
+Route::get('/payment', [PaymentController::class, 'index'])->name('payment.index');
+Route::post('/payment/choose', [PaymentController::class, 'choose'])->name('payment.choose');
+Route::get('/payment/{method}', [PaymentController::class, 'method'])->name('payment.method');
+Route::post('/payment/{method}', [PaymentController::class, 'process'])->name('payment.process');
+
+
+
+
+
 
 require __DIR__.'/auth.php';

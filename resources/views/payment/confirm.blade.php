@@ -1,168 +1,173 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Order Confirmation') }}
-        </h2>
-    </x-slot>
+@extends('layouts.payment')
 
-    <div class="py-12">
-        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900 dark:text-gray-100">
-                    
-                    <!-- Success Message -->
-                    <div class="mb-8 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-6">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <svg class="h-8 w-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                            </div>
-                            <div class="ml-3">
-                                <h3 class="text-lg font-medium text-green-800 dark:text-green-200">
-                                    Order Confirmed!
-                                </h3>
-                                <p class="text-sm text-green-700 dark:text-green-300 mt-1">
-                                    Thank you for your order. We've received your payment and are preparing your food.
-                                </p>
-                            </div>
-                        </div>
+@section('title', 'Payment Successful')
+
+@section('content')
+<div class="max-w-4xl mx-auto">
+    <!-- Success Hero Section -->
+    <div class="text-center mb-12">
+        <div class="bg-green-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">
+            <span class="text-4xl">🎉</span>
+        </div>
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Payment Successful!</h1>
+        <p class="text-lg text-gray-600">Your order has been confirmed and is being prepared</p>
+    </div>
+
+    <!-- Order Confirmation Card -->
+    <div class="bg-white/80 payment-card rounded-2xl p-8 shadow-lg border border-white/50 mb-8">
+        <!-- Order Header -->
+        <div class="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-6 mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900">Order #{{ str_pad($order->id, 6, '0', STR_PAD_LEFT) }}</h2>
+                    <p class="text-green-700 font-medium">{{ $order->customer_name }}</p>
+                </div>
+                <div class="text-right">
+                    <div class="bg-green-600 text-white px-4 py-2 rounded-full text-sm font-semibold">
+                        {{ ucfirst($order->status) }}
                     </div>
-
-                    <!-- Order Details -->
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        
-                        <!-- Order Information -->
-                        <div>
-                            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Order Information</h3>
-                            <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 space-y-3">
-                                <div class="flex justify-between">
-                                    <span class="text-gray-600 dark:text-gray-400">Order Number:</span>
-                                    <span class="font-semibold">#{{ str_pad($order->id, 6, '0', STR_PAD_LEFT) }}</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-gray-600 dark:text-gray-400">Customer:</span>
-                                    <span class="font-semibold">{{ $order->customer_name }}</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-gray-600 dark:text-gray-400">Status:</span>
-                                    <span class="px-2 py-1 bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 rounded-md text-sm">
-                                        {{ ucfirst($order->status) }}
-                                    </span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-gray-600 dark:text-gray-400">Payment Method:</span>
-                                    <span class="font-semibold">
-                                        @switch($order->payment_method)
-                                            @case('card')
-                                                Credit/Debit Card
-                                                @break
-                                            @case('fpx')
-                                                FPX Online Banking
-                                                @break
-                                            @case('cod')
-                                                Cash on Delivery
-                                                @break
-                                            @default
-                                                {{ ucfirst($order->payment_method) }}
-                                        @endswitch
-                                    </span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-gray-600 dark:text-gray-400">Order Date:</span>
-                                    <span class="font-semibold">{{ $order->created_at->format('M d, Y h:i A') }}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Order Items -->
-                        <div>
-                            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Order Items</h3>
-                            <div class="space-y-4">
-                                @foreach($order->items as $item)
-                                    <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
-                                        <div class="flex justify-between items-start">
-                                            <div class="flex-1">
-                                                <h4 class="font-medium text-gray-900 dark:text-gray-100">
-                                                    {{ $item->product->name }}
-                                                </h4>
-                                                
-                                                @if($item->pizzaDetails)
-                                                    <div class="text-sm text-gray-600 dark:text-gray-400 mt-1 space-y-1">
-                                                        <div><strong>Size:</strong> {{ $item->pizzaDetails->size->name }}</div>
-                                                        <div><strong>Crust:</strong> {{ $item->pizzaDetails->crust->name }}</div>
-                                                        @if($item->toppings->count() > 0)
-                                                            <div>
-                                                                <strong>Toppings:</strong>
-                                                                {{ $item->toppings->pluck('topping.name')->join(', ') }}
-                                                            </div>
-                                                        @endif
-                                                    </div>
-                                                @endif
-                                                
-                                                <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                                    Quantity: {{ $item->quantity }}
-                                                </div>
-                                            </div>
-                                            <div class="text-right">
-                                                <div class="font-medium text-gray-900 dark:text-gray-100">
-                                                    RM {{ number_format($item->final_price, 2) }}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Order Total -->
-                    @php
-                        $subtotal = $order->items->sum('final_price');
-                        $deliveryFee = 5.00; // Same as used in other views
-                        $calculatedTotal = $subtotal + $deliveryFee;
-                    @endphp
-                    
-                    <div class="mt-8 bg-gray-50 dark:bg-gray-900 rounded-lg p-6">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Order Summary</h3>
-                        <div class="space-y-2">
-                            <div class="flex justify-between">
-                                <span class="text-gray-600 dark:text-gray-400">Subtotal</span>
-                                <span class="text-gray-900 dark:text-gray-100">RM {{ number_format($subtotal, 2) }}</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-600 dark:text-gray-400">Delivery Fee</span>
-                                <span class="text-gray-900 dark:text-gray-100">RM {{ number_format($deliveryFee, 2) }}</span>
-                            </div>
-                            <hr class="border-gray-200 dark:border-gray-700">
-                            <div class="flex justify-between text-lg font-semibold">
-                                <span class="text-gray-900 dark:text-gray-100">Total</span>
-                                <span class="text-green-600 dark:text-green-400">RM {{ number_format($order->total_amount, 2) }}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Action Buttons -->
-                    <div class="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
-                        <a href="{{ route('orders.create') }}" 
-                           class="inline-flex items-center justify-center px-6 py-3 bg-green-600 text-white font-medium rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-200">
-                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 3H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17M17 13v4a2 2 0 01-2 2H9a2 2 0 01-2-2v-4m8 0V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4.01" />
-                            </svg>
-                            Order Again
-                        </a>
-                        
-                        <a href="{{ route('orders.show', $order->id) }}" 
-                           class="inline-flex items-center justify-center px-6 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors duration-200">
-                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                            View Order Details
-                        </a>
-                    </div>
-
+                    <p class="text-sm text-gray-600 mt-2">{{ $order->created_at->format('M d, Y h:i A') }}</p>
                 </div>
             </div>
         </div>
+
+        <!-- Order Details Grid -->
+        <div class="grid lg:grid-cols-2 gap-8 mb-8">
+            <!-- Order Items -->
+            <div>
+                <h3 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+                    <span class="bg-orange-100 p-2 rounded-full mr-3">🍕</span>
+                    Order Items
+                </h3>
+                <div class="space-y-4">
+                    @foreach($order->items as $item)
+                        <div class="bg-gray-50 rounded-xl p-4">
+                            <div class="flex justify-between items-start">
+                                <div class="flex-1">
+                                    <h4 class="font-semibold text-gray-900">{{ $item->product->name }}</h4>
+                                    @if($item->pizzaDetails)
+                                        <div class="text-sm text-gray-600 mt-2 space-y-1">
+                                            <p><span class="font-medium">Size:</span> {{ $item->pizzaDetails->size->name }}</p>
+                                            <p><span class="font-medium">Crust:</span> {{ $item->pizzaDetails->crust->name }}</p>
+                                            @if($item->toppings->count() > 0)
+                                                <p><span class="font-medium">Toppings:</span> {{ $item->toppings->pluck('topping.name')->join(', ') }}</p>
+                                            @endif
+                                        </div>
+                                    @endif
+                                    <p class="text-sm text-gray-600 mt-1">Qty: {{ $item->quantity }}</p>
+                                </div>
+                                <div class="text-right ml-4">
+                                    <span class="font-bold text-gray-900">RM{{ number_format($item->final_price, 2) }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+
+            <!-- Order Summary -->
+            <div>
+                <h3 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+                    <span class="bg-blue-100 p-2 rounded-full mr-3">💳</span>
+                    Payment Summary
+                </h3>
+                
+                @php
+                    $subtotal = $order->items->sum('final_price');
+                    $deliveryFee = 5.00;
+                @endphp
+                
+                <div class="bg-gray-50 rounded-xl p-6 space-y-4">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-600">Subtotal</span>
+                        <span class="font-medium">RM{{ number_format($subtotal, 2) }}</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-600">Delivery Fee</span>
+                        <span class="font-medium">RM{{ number_format($deliveryFee, 2) }}</span>
+                    </div>
+                    <hr class="border-gray-200">
+                    <div class="flex justify-between text-lg font-bold">
+                        <span>Total Paid</span>
+                        <span class="text-green-600">RM{{ number_format($order->total_amount, 2) }}</span>
+                    </div>
+                    <div class="bg-green-50 rounded-lg p-3 mt-4">
+                        <p class="text-sm text-green-800 font-medium">
+                            Paid via 
+                            @switch($order->payment_method)
+                                @case('card') Credit/Debit Card @break
+                                @case('cash') Cash on Delivery @break
+                                @case('ewallet') E-Wallet @break
+                                @case('online_banking') Online Banking @break
+                                @default {{ ucfirst($order->payment_method) }}
+                            @endswitch
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- What's Next Section -->
+        <div class="bg-blue-50 rounded-xl p-6 mb-8">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <span class="bg-blue-100 p-2 rounded-full mr-3">🕐</span>
+                What happens next?
+            </h3>
+            <div class="grid md:grid-cols-3 gap-4">
+                <div class="text-center">
+                    <div class="bg-blue-200 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <span class="text-xl">👨‍🍳</span>
+                    </div>
+                    <h4 class="font-semibold text-gray-900 mb-1">Preparing</h4>
+                    <p class="text-sm text-gray-600">Our chefs are preparing your delicious order</p>
+                </div>
+                <div class="text-center">
+                    <div class="bg-orange-200 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <span class="text-xl">🚗</span>
+                    </div>
+                    <h4 class="font-semibold text-gray-900 mb-1">On the Way</h4>
+                    <p class="text-sm text-gray-600">Your order will be delivered hot and fresh</p>
+                </div>
+                <div class="text-center">
+                    <div class="bg-green-200 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <span class="text-xl">🎉</span>
+                    </div>
+                    <h4 class="font-semibold text-gray-900 mb-1">Delivered</h4>
+                    <p class="text-sm text-gray-600">Enjoy your amazing pizza!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="{{ route('orders.create') }}" 
+               class="bg-gradient-to-r from-orange-500 to-red-500 text-white px-8 py-3 rounded-xl font-semibold hover:from-orange-600 hover:to-red-600 transition-all duration-300 shadow-lg hover:shadow-xl">
+                <span class="flex items-center justify-center">
+                    <span class="mr-2">🛒</span>
+                    Order Again
+                </span>
+            </a>
+            
+            <a href="{{ route('orders.show', $order->id) }}" 
+               class="bg-gray-200 text-gray-800 px-8 py-3 rounded-xl font-semibold hover:bg-gray-300 transition-all duration-300">
+                <span class="flex items-center justify-center">
+                    <span class="mr-2">📋</span>
+                    View Details
+                </span>
+            </a>
+        </div>
     </div>
-</x-app-layout>
+
+    <!-- Additional Info -->
+    <div class="text-center">
+        <div class="bg-white/60 rounded-xl p-6 border border-white/50">
+            <p class="text-sm text-gray-600 mb-2">
+                <span class="font-medium">📧 Confirmation sent to your email</span>
+            </p>
+            <p class="text-xs text-gray-500">
+                Need help? Contact us at support@pizzapalace.com or (555) 123-PIZZA
+            </p>
+        </div>
+    </div>
+</div>
+@endsection

@@ -2,6 +2,8 @@
 
 namespace App\Payments\Listeners;
 
+// pizzasystem/app/Payments/Listeners/UpdateOrderOnPaymentCaptured.php
+
 use App\Payments\Events\PaymentCaptured;
 use App\Models\Order;
 use App\Models\Payment;
@@ -26,24 +28,20 @@ final class UpdateOrderOnPaymentCaptured
         $order->paid_total_cents = (int) ($order->paid_total_cents ?? 0) + (int) $p->amount;
 
         if ($order->paid_total_cents >= (int) $order->grand_total_cents) {
+            $order->previous_status = $order->status;
             $order->status = 'paid';
             $order->paid_at = now();
         } else {
             $order->status = 'pending_payment';
         }
 
-        $order->save();
+        $result = $order->save();
+
+        \Log::info('Order updated after payment', [
+            'order_id' => $order->id,
+            'status' => $order->status,
+            'paid_total_cents' => $order->paid_total_cents,
+            'save_result' => $result
+        ]);
     }
 }
-//'customer_name',
-//'user_id',
-//'total_amount',
-//'subtotal_cents',
-//'discount_cents',
-//'tax_cents',
-//'delivery_cents',
-//'rounding_cents',
-//'grand_total_cents',
-//'paid_total_cents',
-//'status',
-//'paid_at',
