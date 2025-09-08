@@ -65,4 +65,70 @@ final class PaymentService
 
         return $result;
     }
+
+    /**
+     * Complete a pending payment that was started with requiresAction
+     */
+    public function completePendingPayment(string $idempotencyKey, array $completionData): PaymentResult
+    {
+        // Find the existing payment attempt
+        $attempt = PaymentAttempt::where('idempotency_key', $idempotencyKey)->first();
+        
+        if (!$attempt) {
+            return PaymentResult::failed('Payment attempt not found', 'attempt_not_found');
+        }
+
+        if ($attempt->status !== 'pending') {
+            return PaymentResult::failed('Payment attempt is not pending', 'invalid_status');
+        }
+
+        try {
+            // Update the attempt as successful
+            $attempt->update([
+                'status' => 'success',
+                'raw' => json_encode($completionData)
+            ]);
+
+            // Create the successful payment
+            $payment = Payment::create([
+                'payable_type' => $attempt->payable_type,
+                'payable_id' => $attempt->payable_id,
+                'currency' => $completionData['currency'] ?? 'MYR',
+                'amount' => $attempt->amount,
+                'method' => $attempt->method,
+                'status' => 'captured',
+                'captured_at' => now(),
+                'reference' => $completionData['reference'] ?? null,
+                'meta' => json_encode($completionData['meta'] ?? []),
+            ]);
+
+            // Fire the payment captured event
+            event(new PaymentCaptured($payment));
+
+            // Explicitly trigger listener as fallback
+            $listener = app(UpdateOrderOnPaymentCaptured::class);
+            $listener->handle(new PaymentCaptured($payment));
+
+            return PaymentResult::succeeded(
+                paymentId: (string) $payment->id,
+                attemptId: (string) $attempt->id,
+                reference: $payment->reference,
+                meta: $completionData['meta'] ?? []
+            );
+
+        } catch (\Exception $e) {
+            // Update attempt as failed
+            $attempt->update([
+                'status' => 'failed',
+                'error_message' => $e->getMessage(),
+                'raw' => json_encode(['error' => $e->getMessage()])
+            ]);
+
+            return PaymentResult::failed(
+                'Payment completion failed: ' . $e->getMessage(),
+                'completion_failed',
+                (string) $attempt->id
+            );
+        }
+    }
 }

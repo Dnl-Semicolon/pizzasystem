@@ -144,6 +144,15 @@ Route::get('/payment/{method}', [PaymentController::class, 'method'])->name('pay
 Route::post('/payment/{method}', [PaymentController::class, 'process'])->name('payment.process');
 Route::get('/payments/receipt/{order}', [PaymentController::class, 'receipt'])->name('payments.receipt');
 
+// Online Banking Simulation Routes
+Route::middleware('auth')->group(function () {
+    Route::get('/payment/online-banking/redirect/{key}', [\App\Http\Controllers\OnlineBankingController::class, 'redirect'])->name('payment.online-banking.redirect');
+    Route::get('/payment/online-banking/gateway/{key}', [\App\Http\Controllers\OnlineBankingController::class, 'gateway'])->name('payment.online-banking.gateway');
+    Route::post('/payment/online-banking/authenticate/{key}', [\App\Http\Controllers\OnlineBankingController::class, 'authenticate'])->name('payment.online-banking.authenticate');
+    Route::get('/payment/online-banking/processing/{key}', [\App\Http\Controllers\OnlineBankingController::class, 'processing'])->name('payment.online-banking.processing');
+    Route::post('/payment/online-banking/complete/{key}', [\App\Http\Controllers\OnlineBankingController::class, 'complete'])->name('payment.online-banking.complete');
+});
+
 
 
 

@@ -162,6 +162,16 @@ class PaymentController extends Controller
             return redirect()->route('payments.receipt', $order)->with('success', 'Payment successful!');
         }
 
+        if ($result->isRequiresAction()) {
+            // Payment requires additional action (e.g., redirect to bank)
+            if (isset($result->meta['redirect_url'])) {
+                // Store order ID in session for later completion
+                session(['pending_payment_order_id' => $order->id]);
+                return redirect($result->meta['redirect_url']);
+            }
+            return back()->withErrors(['payment' => $result->message ?? 'Additional action required.'])->withInput();
+        }
+
         // Payment failed - order remains for retry, but show error
         return back()->withErrors(['payment' => $result->message ?? 'Payment failed. Please try again.'])->withInput();
     }

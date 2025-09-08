@@ -14,6 +14,52 @@
                         </div>
                     @endif
 
+                    @if(session('success'))
+                        <div class="mb-6 p-4 bg-green-50 text-green-800 rounded-lg border border-green-200">
+                            <i class="fas fa-check-circle mr-2"></i>
+                            {{ session('success') }}
+                        </div>
+                    @endif
+
+                    @if(session('warning'))
+                        <div class="mb-6 p-4 bg-yellow-50 text-yellow-800 rounded-lg border border-yellow-200">
+                            <i class="fas fa-exclamation-triangle mr-2"></i>
+                            {{ session('warning') }}
+                        </div>
+                    @endif
+
+                    @if(session('info'))
+                        <div class="mb-6 p-4 bg-blue-50 text-blue-800 rounded-lg border border-blue-200">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            {{ session('info') }}
+                        </div>
+                    @endif
+
+                    @if($errors->any())
+                        <div class="mb-6 p-4 bg-red-50 text-red-800 rounded-lg border border-red-200">
+                            <div class="flex items-center mb-2">
+                                <i class="fas fa-exclamation-triangle mr-2"></i>
+                                <span class="font-medium">Please fix the following issues:</span>
+                            </div>
+                            <ul class="list-disc list-inside space-y-1 text-sm">
+                                @foreach($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
+                    {{-- Special handling for payment errors --}}
+                    @if($errors->has('payment'))
+                        <div class="mb-6 p-4 bg-red-50 text-red-800 rounded-lg border border-red-200">
+                            <div class="flex items-center">
+                                <i class="fas fa-credit-card mr-2"></i>
+                                <span class="font-medium">Payment Error:</span>
+                                <span class="ml-2">{{ $errors->first('payment') }}</span>
+                            </div>
+                        </div>
+                    @endif
+
                     <!-- Back to Checkout Button -->
                     <div class="mb-8">
                         <a href="{{ route('checkout.index') }}" class="inline-flex items-center space-x-2 text-gray-600 hover:text-purple-700 hover:bg-purple-50 px-3 py-2 rounded-lg transition-all duration-200 group">
