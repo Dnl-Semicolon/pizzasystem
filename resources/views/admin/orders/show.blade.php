@@ -26,7 +26,9 @@
                         <span @class([
                             'inline-flex rounded-full px-3 py-1 text-sm font-medium ring-1 ring-inset',
                             'text-gray-700 ring-gray-300 bg-gray-50 dark:text-gray-300 dark:ring-gray-600 dark:bg-gray-800' => $order->status === 'pending',
-                            'text-yellow-700 ring-yellow-300 bg-yellow-50 dark:text-yellow-300 dark:ring-yellow-600 dark:bg-yellow-800/20' => $order->status === 'processing',
+                            'text-amber-700 ring-amber-300 bg-amber-50 dark:text-amber-300 dark:ring-amber-600 dark:bg-amber-800/20' => $order->status === 'draft',
+                            'text-red-700 ring-red-300 bg-red-50 dark:text-red-300 dark:ring-red-600 dark:bg-red-800/20' => $order->status === 'pending_payment',
+                            'text-emerald-700 ring-emerald-300 bg-emerald-50 dark:text-emerald-300 dark:ring-emerald-600 dark:bg-emerald-800/20' => in_array($order->status, ['paid', 'processing']),
                             'text-orange-700 ring-orange-300 bg-orange-50 dark:text-orange-300 dark:ring-orange-600 dark:bg-orange-800/20' => $order->status === 'preparing',
                             'text-blue-700 ring-blue-300 bg-blue-50 dark:text-blue-300 dark:ring-blue-600 dark:bg-blue-800/20' => $order->status === 'out_for_delivery',
                             'text-green-700 ring-green-300 bg-green-50 dark:text-green-300 dark:ring-green-600 dark:bg-green-800/20' => $order->status === 'delivered',
@@ -116,7 +118,7 @@
                         <div class="px-6 py-4">
                             <div class="flex justify-between items-center">
                                 <span class="text-lg font-medium text-gray-900 dark:text-gray-100">Total</span>
-                                <span class="text-2xl font-bold text-gray-900 dark:text-gray-100">RM{{ number_format($order->total_amount, 2) }}</span>
+                                <span class="text-2xl font-bold text-gray-900 dark:text-gray-100">RM{{ number_format($order->grand_total_cents / 100, 2) }}</span>
                             </div>
                         </div>
                     </div>
@@ -142,13 +144,13 @@
                             <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Actions</h2>
                         </div>
                         <div class="px-6 py-4 space-y-3">
-                            @if($order->status === 'processing')
+                            @if(in_array($order->status, ['paid', 'processing']))
                                 <form method="POST" action="{{ route('admin.orders.update-status', $order->id) }}" class="w-full">
                                     @csrf
                                     @method('PATCH')
                                     <input type="hidden" name="status" value="preparing">
                                     <button type="submit" class="w-full inline-flex justify-center items-center px-4 py-2 bg-orange-500 hover:bg-orange-600 border border-transparent rounded-md font-semibold text-sm text-white tracking-widest focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                                        Mark Preparing
+                                        Start Preparing
                                     </button>
                                 </form>
                             @endif

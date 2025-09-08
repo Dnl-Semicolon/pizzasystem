@@ -67,7 +67,7 @@
                                 $revenue = null;
                                 if ($orders->count() !== 0) {
                                     foreach($orders as $order) {
-                                        $revenue += $order->total_amount;
+                                        $revenue += $order->grand_total_cents / 100;
                                     }
                                     $revenue = round($revenue, 2);
                                 }
@@ -123,8 +123,10 @@
                                                 'inline-flex rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset text-blue-700 ring-blue-300 bg-blue-50' => $order->status === 'preparing',
                                                 'inline-flex rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset text-green-700 ring-green-300 bg-green-50' => $order->status === 'delivered',
                                                 'inline-flex rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset text-amber-700 ring-amber-300 bg-amber-50' => $order->status === 'draft',
+                                                'inline-flex rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset text-red-700 ring-red-300 bg-red-50' => $order->status === 'pending_payment',
+                                                'inline-flex rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset text-emerald-700 ring-emerald-300 bg-emerald-50' => in_array($order->status, ['paid', 'processing']),
                                             ])>
-                                            {{ ucfirst($order->status) }}
+                                            {{ ucfirst(str_replace('_', ' ', $order->status)) }}
                                         </span>
                                     </div>
                                 </td>
@@ -132,7 +134,7 @@
                                     <div class="font-medium text-gray-900 dark:text-gray-100">{{ $order->items->count() }}</div>
                                 </td>
                                 <td class="px-3 py-2 align-middle text-right">
-                                    <div class="font-medium text-gray-900 dark:text-gray-100">RM{{ $order->total_amount }}</div>
+                                    <div class="font-medium text-gray-900 dark:text-gray-100">RM{{ number_format($order->grand_total_cents / 100, 2) }}</div>
                                 </td>
                                 <td class="px-3 py-2 align-middle text-left">
                                     <div class="font-medium text-gray-900 dark:text-gray-100">{{ $order->created_at }}</div>

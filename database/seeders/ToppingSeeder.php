@@ -22,6 +22,7 @@ class ToppingSeeder extends Seeder
             [
                 'name' => 'Mushrooms',
                 'price' => 1.00,
+                'image_url' => 'assets/images/toppings/mushroom.jpg',
             ],
             [
                 'name' => 'Extra Cheese',

@@ -24,8 +24,8 @@ return new class extends Migration
             $table->integer('rounding_cents');
             $table->integer('grand_total_cents');
             $table->integer('paid_total_cents');
-            $table->enum('status', ['draft', 'pending_payment', 'paid', 'cancelled']);
-            $table->enum('previous_status', ['draft', 'pending_payment', 'paid', 'cancelled'])->nullable();
+            $table->enum('status', ['draft', 'pending_payment', 'paid', 'processing', 'preparing', 'out_for_delivery', 'delivered', 'cancelled']);
+            $table->enum('previous_status', ['draft', 'pending_payment', 'paid', 'processing', 'preparing', 'out_for_delivery', 'delivered', 'cancelled'])->nullable();
             $table->timestamp('paid_at')->nullable()->default(null);
             $table->timestamps();
         });

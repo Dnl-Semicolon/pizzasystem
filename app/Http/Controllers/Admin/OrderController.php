@@ -73,14 +73,25 @@ class OrderController extends Controller
     public function updateStatus(Request $request, string $id)
     {
         $request->validate([
-            'status' => 'required|in:processing,preparing,out_for_delivery,delivered'
+            'status' => 'required|in:draft,pending_payment,paid,processing,preparing,out_for_delivery,delivered'
         ]);
 
         $order = Order::findOrFail($id);
+        
+        // If moving from paid to preparing, this is the normal flow
+        // If setting to paid, set paid_at timestamp
+        if ($request->status === 'paid' && !$order->paid_at) {
+            $order->paid_at = now();
+        }
+        
+        $order->previous_status = $order->status;
         $order->status = $request->status;
         $order->save();
 
         $statusLabels = [
+            'draft' => 'Draft',
+            'pending_payment' => 'Pending Payment',
+            'paid' => 'Paid',
             'processing' => 'Processing',
             'preparing' => 'Preparing',
             'out_for_delivery' => 'Out for Delivery',
