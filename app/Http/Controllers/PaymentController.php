@@ -35,11 +35,11 @@ class PaymentController extends Controller
         }
 
         if (CartHelper::isCartEmpty()) {
-            return redirect()->route('order.create')->with('error', 'Your cart is empty.');
+            return redirect()->route('orders.create')->with('error', 'Your cart is empty.');
         }
 
         if (!session()->has('checkout')) {
-            return redirect()->route('order.create')->with('error', 'Please complete checkout first.');
+            return redirect()->route('orders.create')->with('error', 'Please complete checkout first.');
         }
 
         $hydratedCart = CartHelper::getHydratedCart();
@@ -62,11 +62,11 @@ class PaymentController extends Controller
         $checkout = session()->get('checkout', []);
 
         if (empty($cart)) {
-            return redirect()->route('order.create')->with('error', 'Your cart is empty.');
+            return redirect()->route('orders.create')->with('error', 'Your cart is empty.');
         }
 
         if (empty($checkout)) {
-            return redirect()->route('order.create')->with('error', 'Please complete checkout first.');
+            return redirect()->route('orders.create')->with('error', 'Please complete checkout first.');
         }
 
         // Validate payment method
@@ -84,7 +84,7 @@ class PaymentController extends Controller
         $subtotal = CartHelper::getCartTotal();
         $deliveryFee = 5.00;
         $grandTotal = $subtotal + $deliveryFee;
-        
+
         $subtotalCents = (int) round($subtotal * 100);
         $deliveryFeeCents = 500; // 5.00 * 100
         $grandTotalCents = $subtotalCents + $deliveryFeeCents;
@@ -249,7 +249,7 @@ class PaymentController extends Controller
         }
 
         if (!session()->has('checkout')) {
-            return redirect()->route('order.create')
+            return redirect()->route('orders.create')
                 ->with('error', 'Please complete checkout form first.');
         }
 

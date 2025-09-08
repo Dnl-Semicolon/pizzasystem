@@ -6,6 +6,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
 /**
@@ -40,4 +41,14 @@ class Payment extends Model
         'amount'      => 'integer',
         'captured_at' => 'datetime',
     ];
+
+    public function order(): BelongsTo
+    {
+        return $this->belongsTo(Order::class, 'payable_id');
+    }
+    
+    public function payable()
+    {
+        return $this->morphTo();
+    }
 }

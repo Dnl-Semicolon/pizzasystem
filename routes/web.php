@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\OrderItemController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PaymentHistoryController;
+use App\Http\Controllers\BillingController;
 use App\Http\Controllers\PizzaController;
 use App\Http\Controllers\Admin\PizzaController as AdminPizzaController;
 use App\Http\Controllers\PizzaOrderItemDetailController;
@@ -50,6 +51,10 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile/photo', [ProfileController::class, 'deletePhoto'])->name('profile.photo.delete');
     Route::get('/orders', [HistoryController::class, 'index'])->name('history.index');
     Route::get('/payments', [PaymentHistoryController::class, 'index'])->name('paymentHistory.index');
+    
+    // Billing routes
+    Route::get('/billing', [BillingController::class, 'index'])->name('billing.index');
+    Route::get('/billing/{payment}', [BillingController::class, 'show'])->name('billing.show');
 
     // Address management routes
     Route::resource('addresses', AddressController::class);

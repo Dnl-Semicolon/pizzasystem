@@ -10,7 +10,7 @@ final class OnlineBankingMethod implements PaymentMethod
 {
     public function pay(Payable $payable, array $payload, string $idempotencyKey): PaymentResult
     {
-        $bank = $payload['bank'] ?? null;
+        $bank = $payload['provider'] ?? null;
         if (!$bank) {
             return PaymentResult::failed('Please select a bank', 'missing_bank');
         }

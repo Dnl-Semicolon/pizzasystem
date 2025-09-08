@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
 use App\Models\Order;
+use App\Models\Payment;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -28,6 +29,13 @@ class ProfileController extends Controller
             'total_orders' => 0,
             'total_spent' => 0,
             'favorite_pizza' => null
+        ];
+        
+        // Load billing data for billing tab
+        $recentPayments = collect();
+        $billingStats = [
+            'total_payments' => 0,
+            'total_spent' => 0
         ];
         
         if ($activeTab === 'orders') {
@@ -55,11 +63,34 @@ class ProfileController extends Controller
             $orderStats['favorite_pizza'] = $pizzaCounts->keys()->first();
         }
         
+        if ($activeTab === 'billing') {
+            // Get recent payments for this user through their orders
+            $recentPayments = Payment::where('payable_type', 'order')
+                ->whereHas('order', function ($query) use ($user) {
+                    $query->where('user_id', $user->id);
+                })
+                ->with(['order'])
+                ->orderBy('created_at', 'desc')
+                ->limit(5)
+                ->get();
+            
+            // Calculate billing statistics
+            $allUserPayments = Payment::where('payable_type', 'order')
+                ->whereHas('order', function ($query) use ($user) {
+                    $query->where('user_id', $user->id);
+                })->where('status', 'captured')->get();
+            
+            $billingStats['total_payments'] = $allUserPayments->count();
+            $billingStats['total_spent'] = $allUserPayments->sum('amount');
+        }
+        
         return view('profile.edit', [
             'user' => $user,
             'activeTab' => $activeTab,
             'orders' => $orders,
             'orderStats' => $orderStats,
+            'recentPayments' => $recentPayments,
+            'billingStats' => $billingStats,
         ]);
     }
 

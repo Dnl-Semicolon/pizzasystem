@@ -54,7 +54,14 @@
                 <div class="flex justify-between items-center py-4">
                     <div class="flex items-center space-x-3">
                         <i class="fas fa-pizza-slice text-white text-2xl"></i>
-                        <h1 class="text-xl font-bold text-white mono">{{ config('app.name') }} Payment</h1>
+                        @auth
+                            <a href="{{ route('billing.index') }}" 
+                               class="text-xl font-bold text-white hover:text-purple-200 mono transition-colors duration-200 hover:underline">
+                                {{ config('app.name') }} Payment
+                            </a>
+                        @else
+                            <h1 class="text-xl font-bold text-white mono">{{ config('app.name') }} Payment</h1>
+                        @endauth
                     </div>
 
                     @auth
@@ -111,6 +118,30 @@
         <main class="pb-12">
             {{ $slot }}
         </main>
+
+        <!-- Simple Footer -->
+        <footer class="bg-gray-50 border-t border-gray-200 py-8">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
+                    <div class="flex items-center space-x-6 text-sm text-gray-600">
+                        <a href="{{ route('home') }}" class="hover:text-purple-600 transition-colors">
+                            <i class="fas fa-home mr-1"></i>Home
+                        </a>
+                        <a href="{{ route('profile.edit') }}" class="hover:text-purple-600 transition-colors">
+                            <i class="fas fa-user mr-1"></i>Profile
+                        </a>
+                        @auth
+                            <a href="{{ route('billing.index') }}" class="hover:text-purple-600 transition-colors">
+                                <i class="fas fa-receipt mr-1"></i>Billing
+                            </a>
+                        @endauth
+                    </div>
+                    <div class="text-sm text-gray-500 mono">
+                        © {{ date('Y') }} {{ config('app.name') }} Payment System
+                    </div>
+                </div>
+            </div>
+        </footer>
     </div>
 </body>
 </html>
