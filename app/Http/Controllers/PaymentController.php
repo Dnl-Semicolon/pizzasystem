@@ -1,5 +1,7 @@
 <?php
 
+// app/Http/Controllers/PaymentController.php - Integrated payment module with proper order creation logic
+
 namespace App\Http\Controllers;
 
 use App\Domain\Orders\Payment\OrderPayable;
@@ -78,15 +80,22 @@ class PaymentController extends Controller
             return $payload; // validation failed
         }
 
-        // NOW create the order (right before payment attempt)
-        $grandTotalCents = collect($cart)->sum(fn($item) => $item['price'] * $item['quantity'] * 100);
+        // Create order with proper structure (similar to OrderController)
+        $subtotal = CartHelper::getCartTotal();
+        $deliveryFee = 5.00;
+        $grandTotal = $subtotal + $deliveryFee;
+        
+        $subtotalCents = (int) round($subtotal * 100);
+        $deliveryFeeCents = 500; // 5.00 * 100
+        $grandTotalCents = $subtotalCents + $deliveryFeeCents;
 
         $order = Order::create([
             'user_id' => auth()->id(),
-            'subtotal_cents' => $grandTotalCents,
+            'customer_name' => auth()->user()->name,
+            'subtotal_cents' => $subtotalCents,
             'discount_cents' => 0,
             'tax_cents' => 0,
-            'delivery_cents' => 0,
+            'delivery_cents' => $deliveryFeeCents,
             'rounding_cents' => 0,
             'grand_total_cents' => $grandTotalCents,
             'paid_total_cents' => 0,
@@ -95,13 +104,50 @@ class PaymentController extends Controller
             'paid_at' => null,
         ]);
 
-        // Create order items
-        foreach($cart as $item) {
-            $order->items()->create([
-                'product_id' => $item['product_id'],
+        // Create order items with proper structure (like OrderController)
+        foreach ($cart as $item) {
+            $pizza = null;
+            $productId = null;
+
+            if ($item['type'] === 'pizza') {
+                $pizza = Pizza::with('product')->find($item['pizza_id']);
+                $productId = $pizza?->product_id ?? null;
+            } elseif ($item['type'] === 'product') {
+                $productId = $item['product_id'];
+            }
+
+            // Create Order Item
+            $orderItem = new OrderItem([
+                'order_id' => $order->id,
+                'product_id' => $productId,
                 'quantity' => $item['quantity'],
-                'price' => $item['price']
+                'unit_price' => $item['unit_price'],
+                'final_price' => $item['total_price'],
             ]);
+            $orderItem->save();
+
+            // If it's a pizza, add detail + toppings
+            if ($item['type'] === 'pizza') {
+                PizzaOrderItemDetail::create([
+                    'order_item_id' => $orderItem->id,
+                    'pizza_size_id' => $item['size_id'],
+                    'crust_id' => $item['crust_id'],
+                    'base_price' => $item['base_price'],
+                    'crust_addition' => $item['add_on'],
+                    'toppings_total' => $item['toppings_total'],
+                ]);
+
+                if (!empty($item['toppings'])) {
+                    foreach ($item['toppings'] as $toppingString) {
+                        [$toppingId, $toppingPrice] = explode('-', $toppingString);
+                        PizzaOrderItemTopping::create([
+                            'order_item_id' => $orderItem->id,
+                            'topping_id' => $toppingId,
+                            'topping_price' => $toppingPrice,
+                        ]);
+                    }
+                }
+            }
         }
 
         // Attempt payment

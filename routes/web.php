@@ -1,5 +1,7 @@
 <?php
 
+// routes/web.php - Added payments.receipt route for payment integration
+
 use App\Http\Controllers\AddressController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\CartController;
@@ -135,6 +137,7 @@ Route::get('/payment', [PaymentController::class, 'index'])->name('payment.index
 Route::post('/payment/choose', [PaymentController::class, 'choose'])->name('payment.choose');
 Route::get('/payment/{method}', [PaymentController::class, 'method'])->name('payment.method');
 Route::post('/payment/{method}', [PaymentController::class, 'process'])->name('payment.process');
+Route::get('/payments/receipt/{order}', [PaymentController::class, 'receipt'])->name('payments.receipt');
 
 
 

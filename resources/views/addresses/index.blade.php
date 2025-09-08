@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center justify-between">
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+            <h2 class="font-semibold text-xl dark:text-gray-200 leading-tight">
                 {{ __('Delivery Addresses') }}
             </h2>
             <a href="{{ route('addresses.create') }}" class="inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-700 focus:bg-red-700 active:bg-red-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition ease-in-out duration-150">
@@ -28,7 +28,7 @@
                         <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                             @foreach($addresses as $address)
                                 <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 {{ $address->is_default ? 'ring-2 ring-red-500 bg-red-50 dark:bg-red-900/10' : 'bg-gray-50 dark:bg-gray-900/50' }}">
-                                    
+
                                     <div class="flex items-center space-x-2 mb-3">
                                         @if($address->label)
                                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200">

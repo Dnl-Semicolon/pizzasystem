@@ -1,5 +1,7 @@
 <?php
 
+// app/Models/Order.php - Added customer_name to fillable fields
+
 namespace App\Models;
 
 use Database\Factories\OrderFactory;
@@ -22,6 +24,7 @@ class Order extends Model
 
     protected $fillable = [
         'user_id',
+        'customer_name',
         'subtotal_cents',
         'discount_cents',
         'tax_cents',

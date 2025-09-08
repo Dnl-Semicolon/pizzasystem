@@ -17,10 +17,6 @@ class OrderFactory extends Factory
     public function definition(): array
     {
         return [
-            'customer_name' => 'Placeholder Customer',
-            'user_id' => 1,
-            'total_amount' => 0.00,
-            'status' => 'draft',
         ];
     }
 }

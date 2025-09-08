@@ -6,7 +6,8 @@
       "Bash(php artisan make:controller:*)",
       "Bash(php artisan:*)",
       "Bash(php -l:*)",
-      "Read(//var/folders/3z/bzh5xrp54t93wqd1h1q7yd7r0000gn/T/TemporaryItems/NSIRD_screencaptureui_a4TcDp/**)"
+      "Read(//var/folders/3z/bzh5xrp54t93wqd1h1q7yd7r0000gn/T/TemporaryItems/NSIRD_screencaptureui_a4TcDp/**)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []

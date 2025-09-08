@@ -1,5 +1,7 @@
 <?php
 
+// app/Domain/Orders/Payment/OrderPayable.php - Fixed customerId() to return user_id instead of customer_name
+
 namespace App\Domain\Orders\Payment;
 
 use App\Payments\Contracts\Payable;
@@ -34,6 +36,6 @@ final class OrderPayable implements Payable
 
     public function customerId(): ?int
     {
-        return $this->order->customer_name;
+        return $this->order->user_id;
     }
 }

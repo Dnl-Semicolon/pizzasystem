@@ -1,3 +1,4 @@
+{{-- resources/views/history/index.blade.php - Fixed order totals to use grand_total_cents and updated status colors --}}
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
@@ -36,6 +37,9 @@
                                     id="status"
                                     class="block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500">
                                 <option value="all" {{ request('status') === 'all' ? 'selected' : '' }}>All Orders</option>
+                                <option value="draft" {{ request('status') === 'draft' ? 'selected' : '' }}>Draft</option>
+                                <option value="pending_payment" {{ request('status') === 'pending_payment' ? 'selected' : '' }}>Pending Payment</option>
+                                <option value="paid" {{ request('status') === 'paid' ? 'selected' : '' }}>Paid</option>
                                 <option value="processing" {{ request('status') === 'processing' ? 'selected' : '' }}>Processing</option>
                                 <option value="preparing" {{ request('status') === 'preparing' ? 'selected' : '' }}>Preparing</option>
                                 <option value="out_for_delivery" {{ request('status') === 'out_for_delivery' ? 'selected' : '' }}>Out for Delivery</option>
@@ -79,7 +83,9 @@
                                                 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
                                                 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300' => $order->status === 'pending',
                                                 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300' => $order->status === 'draft',
-                                                'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300' => $order->status === 'preparing',
+                                                'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300' => $order->status === 'pending_payment',
+                                                'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300' => $order->status === 'paid',
+                                                'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300' => in_array($order->status, ['processing', 'preparing']),
                                                 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300' => $order->status === 'out_for_delivery',
                                                 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300' => $order->status === 'delivered',
                                             ])>
@@ -89,7 +95,7 @@
 
                                         <div class="text-sm text-gray-600 dark:text-gray-400 mb-3">
                                             <p>Placed on {{ $order->created_at->format('F j, Y \a\t g:i A') }}</p>
-                                            <p>{{ $order->items->count() }} {{ Str::plural('item', $order->items->count()) }} • Total: <span class="font-semibold text-gray-900 dark:text-gray-100">RM{{ number_format($order->total_amount, 2) }}</span></p>
+                                            <p>{{ $order->items->count() }} {{ Str::plural('item', $order->items->count()) }} • Total: <span class="font-semibold text-gray-900 dark:text-gray-100">RM{{ number_format($order->grand_total_cents / 100, 2) }}</span></p>
                                         </div>
 
                                         <!-- Order Items Preview -->

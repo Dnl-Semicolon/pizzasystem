@@ -28,10 +28,10 @@ class DatabaseSeeder extends Seeder
             PizzaSeeder::class,
             PizzaSizePriceSeeder::class,
             CrustPriceAdditionSeeder::class,
-            OrderSeeder::class,
-            OrderItemSeeder::class,
-            PizzaOrderItemDetailSeeder::class,
-            PizzaOrderItemToppingSeeder::class,
+//            OrderSeeder::class,
+//            OrderItemSeeder::class,
+//            PizzaOrderItemDetailSeeder::class,
+//            PizzaOrderItemToppingSeeder::class,
             AddressSeeder::class,
         ]);
     }

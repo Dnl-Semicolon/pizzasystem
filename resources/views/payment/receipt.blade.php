@@ -1,3 +1,4 @@
+{{-- resources/views/payment/receipt.blade.php - Fixed route references for orders --}}
 <x-app-layout>
     <div class="py-6">
         <div class="max-w-2xl mx-auto sm:px-6 lg:px-8">
@@ -49,10 +50,10 @@
                         A confirmation email will be sent to your registered email address.
                     </p>
                     <div class="flex gap-4 justify-center">
-                        <a href="{{ route('order.index') }}" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
+                        <a href="{{ route('history.index') }}" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
                             View Orders
                         </a>
-                        <a href="{{ route('order.create') }}" class="bg-gray-300 text-gray-700 px-6 py-2 rounded hover:bg-gray-400">
+                        <a href="{{ route('orders.create') }}" class="bg-gray-300 text-gray-700 px-6 py-2 rounded hover:bg-gray-400">
                             New Order
                         </a>
                     </div>

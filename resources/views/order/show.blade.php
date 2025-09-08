@@ -1,3 +1,4 @@
+{{-- resources/views/order/show.blade.php - Fixed order totals to use grand_total_cents, updated status colors, and updated progress tracking for payment flow --}}
 <x-app-layout>
     <x-slot name="header">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
@@ -6,13 +7,17 @@
                     Order #{{ $order->id }}
                 </h2>
                 <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    Placed on {{ $order->created_at->format('F j, Y \a\t g:i A') }}
+{{--                    Placed on {{ $order->created_at->format('F j, Y \a\t g:i A') }}--}}
+                    Placed on {{ $order->created_at }}
                 </p>
             </div>
             <div class="mt-2 sm:mt-0">
                 <span @class([
                     'inline-flex items-center px-3 py-1 rounded-full text-sm font-medium',
                     'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300' => $order->status === 'pending',
+                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300' => $order->status === 'draft',
+                    'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300' => $order->status === 'pending_payment',
+                    'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300' => $order->status === 'paid',
                     'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300' => $order->status === 'processing',
                     'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300' => $order->status === 'preparing',
                     'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300' => $order->status === 'out_for_delivery',
@@ -51,41 +56,46 @@
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
                 <div class="p-6">
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-6">Order Progress</h3>
-                    
+
                     <div class="relative">
                         <!-- Progress Line -->
                         <div class="absolute left-4 top-8 bottom-0 w-0.5 bg-gray-200 dark:bg-gray-600"></div>
-                        
+
                         <!-- Progress Steps -->
                         <div class="space-y-6">
-                            <!-- Processing -->
+                            <!-- Payment Completed -->
                             <div class="relative flex items-start">
-                                <div class="flex items-center justify-center w-8 h-8 rounded-full {{ in_array($order->status, ['processing', 'preparing', 'out_for_delivery', 'delivered']) ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600' }}">
-                                    @if(in_array($order->status, ['processing', 'preparing', 'out_for_delivery', 'delivered']))
+                                <div class="flex items-center justify-center w-8 h-8 rounded-full {{ in_array($order->status, ['paid', 'processing', 'preparing', 'out_for_delivery', 'delivered']) ? 'bg-green-500' : ($order->status === 'pending_payment' ? 'bg-orange-500' : 'bg-gray-300 dark:bg-gray-600') }}">
+                                    @if(in_array($order->status, ['paid', 'processing', 'preparing', 'out_for_delivery', 'delivered']))
                                         <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                                         </svg>
+                                    @elseif($order->status === 'pending_payment')
+                                        <div class="w-2 h-2 bg-white rounded-full animate-pulse"></div>
                                     @else
                                         <div class="w-2 h-2 bg-white rounded-full"></div>
                                     @endif
                                 </div>
                                 <div class="ml-4">
-                                    <h4 class="text-sm font-medium text-gray-900 dark:text-gray-100">Order Received</h4>
-                                    <p class="text-sm text-gray-500 dark:text-gray-400">We've received your order and payment</p>
-                                    @if($order->status === 'processing' || in_array($order->status, ['preparing', 'out_for_delivery', 'delivered']))
-                                        <p class="text-xs text-gray-400 dark:text-gray-500">{{ $order->created_at->format('M j, g:i A') }}</p>
+                                    <h4 class="text-sm font-medium text-gray-900 dark:text-gray-100">Payment Completed</h4>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">Your payment has been processed successfully</p>
+                                    @if($order->status === 'pending_payment')
+                                        <p class="text-xs text-orange-600 dark:text-orange-400">Awaiting payment</p>
+                                    @elseif(in_array($order->status, ['paid', 'processing', 'preparing', 'out_for_delivery', 'delivered']))
+{{--                                        <p class="text-xs text-gray-400 dark:text-gray-500">{{ $order->paid_at?->format('M j, g:i A') ?? $order->created_at->format('M j, g:i A') }}</p>--}}
+                                        <p class="text-xs text-gray-400 dark:text-gray-500">{{ $order->paid_at ?? $order->created_at }}</p>
                                     @endif
                                 </div>
                             </div>
 
                             <!-- Preparing -->
                             <div class="relative flex items-start">
-                                <div class="flex items-center justify-center w-8 h-8 rounded-full {{ in_array($order->status, ['preparing', 'out_for_delivery', 'delivered']) ? 'bg-green-500' : ($order->status === 'processing' ? 'bg-orange-500' : 'bg-gray-300 dark:bg-gray-600') }}">
+                                <div class="flex items-center justify-center w-8 h-8 rounded-full {{ in_array($order->status, ['preparing', 'out_for_delivery', 'delivered']) ? 'bg-green-500' : (in_array($order->status, ['paid', 'processing']) ? 'bg-orange-500' : 'bg-gray-300 dark:bg-gray-600') }}">
                                     @if(in_array($order->status, ['preparing', 'out_for_delivery', 'delivered']))
                                         <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                                         </svg>
-                                    @elseif($order->status === 'processing')
+                                    @elseif(in_array($order->status, ['paid', 'processing']))
                                         <div class="w-2 h-2 bg-white rounded-full animate-pulse"></div>
                                     @else
                                         <div class="w-2 h-2 bg-white rounded-full"></div>
@@ -94,8 +104,10 @@
                                 <div class="ml-4">
                                     <h4 class="text-sm font-medium text-gray-900 dark:text-gray-100">Preparing Your Order</h4>
                                     <p class="text-sm text-gray-500 dark:text-gray-400">Our chefs are preparing your delicious pizza</p>
-                                    @if($order->status === 'processing')
-                                        <p class="text-xs text-orange-600 dark:text-orange-400">Current step</p>
+                                    @if(in_array($order->status, ['paid', 'processing']))
+                                        <p class="text-xs text-orange-600 dark:text-orange-400">Getting ready to prepare</p>
+                                    @elseif($order->status === 'preparing')
+                                        <p class="text-xs text-orange-600 dark:text-orange-400">Currently preparing</p>
                                     @endif
                                 </div>
                             </div>
@@ -159,12 +171,13 @@
                         <div>
                             <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Order #{{ $order->id }}</h3>
                             <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                Placed on {{ $order->created_at->format('F j, Y \a\t g:i A') }}
+{{--                                Placed on {{ $order->created_at->format('F j, Y \a\t g:i A') }}--}}
+                                Placed on {{ $order->created_at }}
                             </p>
                         </div>
                         <div class="mt-4 sm:mt-0 text-right">
                             <p class="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                                RM {{ number_format($order->total_amount, 2) }}
+                                RM {{ number_format($order->grand_total_cents / 100, 2) }}
                             </p>
                             <p class="text-sm text-gray-600 dark:text-gray-400">Total Amount</p>
                         </div>
@@ -185,11 +198,11 @@
                                     <div class="flex gap-4">
                                         <!-- Product Image -->
                                         <div class="w-20 h-20 bg-white rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0">
-                                            <img src="{{ $item->product->image_url ? asset($item->product->image_url) : 'https://placehold.co/400x400.png' }}" 
-                                                 alt="{{ $item->product->name }}" 
+                                            <img src="{{ $item->product->image_url ? asset($item->product->image_url) : 'https://placehold.co/400x400.png' }}"
+                                                 alt="{{ $item->product->name }}"
                                                  class="max-w-full max-h-full object-contain">
                                         </div>
-                                        
+
                                         <!-- Product Details -->
                                         <div class="flex-1 flex justify-between items-start">
                                             <div>
@@ -210,7 +223,7 @@
                                                             {{ $item->pizzaDetails->crust->name }} Crust
                                                         </span>
                                                     </div>
-                                                    
+
                                                     @if ($item->toppings->isNotEmpty())
                                                         <div>
                                                             <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Toppings:</p>
@@ -243,7 +256,7 @@
             <!-- Actions -->
             <div class="flex flex-col sm:flex-row gap-4">
                 @if($order->status === 'delivered')
-                    <button type="button" 
+                    <button type="button"
                             class="inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
@@ -251,14 +264,14 @@
                         Reorder
                     </button>
                 @endif
-                <a href="{{ route('products.index') }}" 
+                <a href="{{ route('products.index') }}"
                    class="inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
                     </svg>
                     Continue Shopping
                 </a>
-                <a href="{{ route('history.index') }}" 
+                <a href="{{ route('history.index') }}"
                    class="inline-flex justify-center items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>

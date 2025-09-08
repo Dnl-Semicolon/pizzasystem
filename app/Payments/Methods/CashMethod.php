@@ -8,21 +8,25 @@ use App\Payments\DTOs\PaymentResult;
 
 final class CashMethod implements PaymentMethod
 {
-
     public function pay(Payable $payable, array $payload, string $idempotencyKey): PaymentResult
     {
         $amount = $payable->amountDue();
         if ($amount <= 0) {
-            return PaymentResult::failed('Nothing to collect (amount <= 0).');
+            return PaymentResult::failed('Nothing to collect (amount <= 0).', 'no_amount');
         }
 
-        // For cash, capture is immediate. We return a success PaymentResult;
-        // PaymentService will create the payments row and fire the event.
-        $reference = 'CASH-' . now()->format('Ymd-His');
+        // Immediate capture. Service will create the payments row.
+        $reference = 'CASH-' . now()->format('YmdHis');
 
-        // paymentId is filled by the service after it creates the Payment row,
-        // so we pass null here and just return succeeded semantics.
-        return PaymentResult::succeeded(paymentId: '', attemptId: null, reference: $reference, meta: []);
+        return PaymentResult::succeeded(
+            paymentId: '',                 // let PaymentService set real id
+            attemptId: null,
+            reference: $reference,
+            meta: [
+                'method' => 'cash',
+                'note'   => $payload['note'] ?? null,
+            ],
+        );
     }
 
     public function label(): string

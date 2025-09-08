@@ -14,7 +14,7 @@ class HistoryController extends Controller
      */
     public function index(Request $request): View
     {
-        $query = Order::where('customer_name', Auth::user()->name)
+        $query = Order::where('user_id', Auth::user()->id)
             ->with([
                 'items.product',
                 'items.pizzaDetails.size',
