@@ -70,17 +70,12 @@ class CartController extends Controller
     public function addToCart(Request $request)
     {
         $cart = session()->get('cart', []);
-
         $quantity = (int) $request->input('quantity', 1);
 
         if ($request->has('pizza_id')) {
             // 🍕 Customized Pizza
-
             $pizza = Pizza::findOrFail($request->pizza_id);
             $productId = $pizza->product->id;
-
-            $sizeId = null;
-            $crustId = null;
 
             if ($request->filled('variant')) {
                 [$sizeId, $crustId] = explode('_', $request->input('variant'));
@@ -99,96 +94,77 @@ class CartController extends Controller
                 ->where('pizza_size_id', $sizeId)
                 ->first()?->price_addition ?? 0;
 
-            // Get toppings
-            $toppingTotal = 0;
-            $toppingIds = [];
+            // Normalize toppings for comparison
+            $toppingsJson = $request->input('toppingsJson', '[]');
+            $toppings = collect(json_decode($toppingsJson, true) ?: [])
+                ->sortBy('name')->values()->all();
 
+            // Try to find a matching existing item and update it
             $matched = false;
-            $toppingsJson = $request->input('toppingsJson', '[]'); // default to empty array
-            $toppings = collect(json_decode($toppingsJson, true))
-                ->sortBy('name')
-                ->values()
-                ->all();
-
-            foreach ($cart as $item) {
-                $itemToppings = collect(json_decode($item['toppingsNames'], true))
-                    ->sortBy('name')
-                    ->values()
-                    ->all();
+            foreach ($cart as $idx => $item) {
+                $itemToppings = collect(json_decode($item['toppingsNames'] ?? '[]', true) ?: [])
+                    ->sortBy('name')->values()->all();
 
                 if (
-                    $item['type'] === 'pizza' &&
-                    $item['pizza_id'] == $request->pizza_id &&
-                    $item['size_id'] == $sizeId &&
-                    $item['crust_id'] == $crustId &&
+                    ($item['type'] ?? null) === 'pizza' &&
+                    ($item['pizza_id'] ?? null) == $request->pizza_id &&
+                    ($item['size_id'] ?? null) == $sizeId &&
+                    ($item['crust_id'] ?? null) == $crustId &&
                     $itemToppings == $toppings
                 ) {
-                    $item['quantity'] += $quantity;
-                    $item['total_price'] = $item['unit_price'] * $item['quantity'];
+                    $cart[$idx]['quantity'] = (int) ($cart[$idx]['quantity'] ?? 0) + $quantity;
+                    $cart[$idx]['total_price'] = round($cart[$idx]['unit_price'] * $cart[$idx]['quantity'], 2);
                     $matched = true;
                     break;
                 }
             }
 
             if (!$matched) {
-                // Compute toppingsTotal
-                $toppingsTotal = 0.00;
-                if (is_array($request->toppings)) {
-                    foreach ($request->toppings as $topping) {
-                        // Expecting format "id-price", e.g. "2-1.00"
-                        [$id, $price] = explode('-', $topping);
-                        $toppingsTotal += (float) $price;
-                    }
-                    $toppingsTotal = round($toppingsTotal, 2);
-                }
-
+                // Compute toppings totals & names (from "id-price" inputs)
+                $toppingTotal = 0.00;
+                $toppingIds = [];
                 if (is_array($request->toppings)) {
                     foreach ($request->toppings as $raw) {
                         [$id, $price] = explode('-', $raw);
                         $toppingTotal += (float) $price;
                         $toppingIds[] = $id;
                     }
-
-                    $toppingNames = Topping::whereIn('id', $toppingIds)->pluck('name')->toArray();
                 }
+                $toppingNames = $toppingIds ? Topping::whereIn('id', $toppingIds)->pluck('name')->toArray() : [];
 
-                // Final price calculation
+                // Final price
                 $unitPrice = round($basePrice + $addon + $toppingTotal, 2);
-                $totalPrice = $unitPrice * $quantity;
-
+                $totalPrice = round($unitPrice * $quantity, 2);
 
                 $cart[] = [
-                    'type' => 'pizza',
-                    'product_id' => $productId,
-                    'pizza_id' => $request->pizza_id,
-                    'size_id' => $sizeId,
-                    'crust_id' => $crustId,
-                    'add_on' => $addon,
-                    'base_price' => round((float) $request->price, 2),
-//                    'unit_price' => round((float) $request->unit_price, 2),
-                    'unit_price' => $unitPrice,
-//                    'total_price' => round((float) $request->total_price, 2),
-                    'total_price' => $totalPrice,
-                    'quantity' => $quantity,
-                    'toppings' => $request->toppings,
-//                    'toppingsNames' => $request->toppingsJson,
-                    'toppingsNames' => $toppingsJson,
-//                    'toppings_total' => $toppingsTotal,
-                    'toppings_total' => $toppingTotal,
+                    'type'           => 'pizza',
+                    'product_id'     => $productId,
+                    'pizza_id'       => $request->pizza_id,
+                    'size_id'        => $sizeId,
+                    'crust_id'       => $crustId,
+                    'add_on'         => $addon,
+                    'base_price'     => round((float) $basePrice, 2),
+                    'unit_price'     => $unitPrice,
+                    'total_price'    => $totalPrice,
+                    'quantity'       => $quantity,
+                    'toppings'       => $request->toppings,     // raw "id-price" strings
+                    'toppingsNames'  => $toppingsJson,          // normalized JSON (for match)
+                    'toppings_total' => round($toppingTotal, 2),
+                    // optional: store resolved names if you render them
+                    // 'toppings_label' => $toppingNames,
                 ];
             }
 
         } elseif ($request->has('product_id')) {
             // 🧃 Simple Product
             $product = Product::findOrFail($request->product_id);
-
             $cart[] = [
-                'type' => 'product',
-                'product_id' => $product->id,
-                'name' => $product->name,
-                'quantity' => $quantity,
-                'unit_price' => round((float) $product->price, 2),
-                'total_price' => round((float) $product->price * $quantity, 2, 2),
+                'type'        => 'product',
+                'product_id'  => $product->id,
+                'name'        => $product->name,
+                'quantity'    => $quantity,
+                'unit_price'  => round((float) $product->price, 2),
+                'total_price' => round((float) $product->price * $quantity, 2),
             ];
         }
 
@@ -196,21 +172,6 @@ class CartController extends Controller
 
         return redirect()->route('orders.create')->with('success', 'Item added to cart!');
     }
+
+
 }
-//                    'type' => 'pizza',
-//                    'product_id' => $productId,
-//                    'pizza_id' => $request->pizza_id,
-//                    'size_id' => $sizeId,
-//                    'crust_id' => $crustId,
-//                    'add_on' => $request->add_on_price,
-//                    'base_price' => round((float) $request->price, 2),
-////                    'unit_price' => round((float) $request->unit_price, 2),
-//                    'unit_price' => $unitPrice,
-////                    'total_price' => round((float) $request->total_price, 2),
-//                    'total_price' => $totalPrice,
-//                    'quantity' => $quantity,
-//                    'toppings' => $request->toppings,
-////                    'toppingsNames' => $request->toppingsJson,
-//                    'toppingsNames' => $toppingNames,
-////                    'toppings_total' => $toppingsTotal,
-//                    'toppings_total' => $toppingTotal,

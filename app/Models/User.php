@@ -58,4 +58,14 @@ class User extends Authenticatable
     {
         return $this->addresses()->where('is_default', true)->first();
     }
+
+    public function savedPaymentMethods(): HasMany
+    {
+        return $this->hasMany(SavedPaymentMethod::class);
+    }
+
+    public function defaultPaymentMethod()
+    {
+        return $this->savedPaymentMethods()->where('is_default', true)->first();
+    }
 }

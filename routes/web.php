@@ -15,6 +15,7 @@ use App\Http\Controllers\OrderItemController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PaymentHistoryController;
 use App\Http\Controllers\BillingController;
+use App\Http\Controllers\SavedPaymentMethodController;
 use App\Http\Controllers\PizzaController;
 use App\Http\Controllers\Admin\PizzaController as AdminPizzaController;
 use App\Http\Controllers\PizzaOrderItemDetailController;
@@ -51,7 +52,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile/photo', [ProfileController::class, 'deletePhoto'])->name('profile.photo.delete');
     Route::get('/orders', [HistoryController::class, 'index'])->name('history.index');
     Route::get('/payments', [PaymentHistoryController::class, 'index'])->name('paymentHistory.index');
-    
+
     // Billing routes
     Route::get('/billing', [BillingController::class, 'index'])->name('billing.index');
     Route::get('/billing/{payment}', [BillingController::class, 'show'])->name('billing.show');
@@ -59,7 +60,16 @@ Route::middleware('auth')->group(function () {
     // Address management routes
     Route::resource('addresses', AddressController::class);
     Route::post('/addresses/{address}/set-default', [AddressController::class, 'setDefault'])->name('addresses.set-default');
+
 });
+
+// Billing and payment methods routes
+Route::get('/billing/payment-methods/manage', [SavedPaymentMethodController::class, 'index'])->name('billing.payment-methods.index');
+Route::get('/billing/payment-methods/create', [SavedPaymentMethodController::class, 'create'])->name('billing.payment-methods.create');
+Route::post('/billing/payment-methods/store', [SavedPaymentMethodController::class, 'store'])->name('billing.payment-methods.store');
+Route::get('/billing/payment-methods/select', [SavedPaymentMethodController::class, 'select'])->name('billing.payment-methods.select');
+Route::delete('/billing/payment-methods/{savedPaymentMethod}', [SavedPaymentMethodController::class, 'destroy'])->name('billing.payment-methods.destroy');
+Route::post('/billing/payment-methods/{savedPaymentMethod}/set-default', [SavedPaymentMethodController::class, 'setDefault'])->name('billing.payment-methods.set-default');
 
 Route::get('/pizzas', [PizzaController::class, 'index'])->name('pizzas.index');
 Route::get('/pizzas/{id}', [PizzaController::class, 'show'])->name('pizzas.show');

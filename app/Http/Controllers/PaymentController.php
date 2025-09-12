@@ -10,6 +10,7 @@ use App\Models\OrderItem;
 use App\Models\PizzaOrderItemDetail;
 use App\Models\PizzaOrderItemTopping;
 use App\Models\Pizza;
+use App\Models\SavedPaymentMethod;
 use App\Helpers\CartHelper;
 use App\Payments\PaymentService;
 use Illuminate\Http\RedirectResponse;
@@ -47,12 +48,21 @@ class PaymentController extends Controller
         $deliveryFee = 5.00;
         $grandTotal = $subtotal + $deliveryFee;
 
-        return view("payment.methods.$method", [
+        $data = [
             'cart' => $hydratedCart,
             'subtotal' => $subtotal,
             'deliveryFee' => $deliveryFee,
             'grandTotal' => $grandTotal,
-        ]);
+        ];
+
+        if ($method === 'card' && Auth::check()) {
+            $data['savedPaymentMethods'] = Auth::user()->savedPaymentMethods()
+                ->orderBy('is_default', 'desc')
+                ->orderBy('created_at', 'desc')
+                ->get();
+        }
+
+        return view("payment.methods.$method", $data);
     }
 
     public function process(Request $request, string $method, PaymentService $payments)
@@ -157,6 +167,16 @@ class PaymentController extends Controller
         $result = $payments->collect($method, $payable, $payload, $key);
 
         if ($result->isSucceeded()) {
+            // Save new payment method if requested and payment successful
+            if ($method === 'card' && isset($payload['save_new_method']) && $payload['save_new_method'] && Auth::check()) {
+                try {
+                    SavedPaymentMethod::createFromPaymentData(Auth::id(), $payload['new_method_data']);
+                } catch (\Exception $e) {
+                    // Log error but don't fail the payment
+                    \Log::warning('Failed to save payment method: ' . $e->getMessage());
+                }
+            }
+
             // Payment successful - clear sessions and redirect to receipt
             session()->forget(['cart', 'checkout', 'payment.method']);
             return redirect()->route('payments.receipt', $order)->with('success', 'Payment successful!');
@@ -184,28 +204,65 @@ class PaymentController extends Controller
                 return [];
 
             case 'card':
-                // Minimal, fake validation (never store PAN/CVV)
-                $req->validate([
-                    'card_name'   => 'required|string|max:80',
-                    'card_number' => 'required|string',
-                    'exp'         => 'required|string',
-                    'cvv'         => 'required|string|max:4',
-                ]);
+                $savedMethodId = $req->input('saved_payment_method_id');
+                
+                if ($savedMethodId) {
+                    // Using saved payment method
+                    $savedMethod = Auth::user()->savedPaymentMethods()->find($savedMethodId);
+                    
+                    if (!$savedMethod) {
+                        return back()->withErrors(['payment' => 'Selected payment method not found.'])->withInput();
+                    }
 
-                $panRaw = preg_replace('/\D+/', '', (string)$req->input('card_number'));
-//                if (!$this->luhnOk($panRaw)) {
-//                    return back()->withErrors(['payment' => 'Card number is invalid.'])->withInput();
-//                }
-                if (!preg_match('/^(0[1-9]|1[0-2])\/(\d{2})$/', $req->string('exp'))) {
-                    return back()->withErrors(['payment' => 'Expiry must be MM/YY.'])->withInput();
+                    $req->validate([
+                        'cvv' => 'required|string|max:4',
+                    ]);
+
+                    $panRaw = $savedMethod->card_number;
+                    
+                    return [
+                        'card_last4' => $savedMethod->card_last4,
+                        'brand'      => $savedMethod->card_brand,
+                        'card_name'  => $savedMethod->cardholder_name,
+                        'note'       => $req->string('note'),
+                        'saved_method_id' => $savedMethodId,
+                        'using_saved_method' => true,
+                    ];
+                } else {
+                    // Using new card
+                    $req->validate([
+                        'card_name'   => 'required|string|max:80',
+                        'card_number' => 'required|string',
+                        'exp'         => 'required|string',
+                        'cvv'         => 'required|string|max:4',
+                    ]);
+
+                    $panRaw = preg_replace('/\D+/', '', (string)$req->input('card_number'));
+                    
+                    if (!preg_match('/^(0[1-9]|1[0-2])\/(\d{2})$/', $req->string('exp'))) {
+                        return back()->withErrors(['payment' => 'Expiry must be MM/YY.'])->withInput();
+                    }
+
+                    $payload = [
+                        'card_last4' => substr($panRaw, -4),
+                        'brand'      => $this->guessBrand($panRaw),
+                        'card_name'  => $req->string('card_name'),
+                        'note'       => $req->string('note'),
+                        'using_saved_method' => false,
+                    ];
+
+                    // Save payment method if requested
+                    if ($req->boolean('save_payment_method') && Auth::check()) {
+                        $payload['save_new_method'] = true;
+                        $payload['new_method_data'] = [
+                            'card_number' => $req->input('card_number'),
+                            'card_name' => $req->input('card_name'),
+                            'exp' => $req->input('exp'),
+                        ];
+                    }
+
+                    return $payload;
                 }
-
-                return [
-                    'card_last4' => substr($panRaw, -4),
-                    'brand'      => $this->guessBrand($panRaw),
-                    'card_name'  => $req->string('card_name'),
-                    'note'       => $req->string('note'),
-                ];
 
             case 'ewallet':
             case 'online_banking':

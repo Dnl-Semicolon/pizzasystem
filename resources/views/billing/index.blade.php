@@ -76,6 +76,35 @@
                 </div>
             </div>
 
+            <!-- Quick Actions -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <a href="{{ route('billing.payment-methods.index') }}" class="bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl p-6 text-white hover:from-purple-600 hover:to-purple-700 transition-all duration-200 transform hover:scale-105">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-xl font-bold mb-2">💳 Payment Methods</h3>
+                            <p class="text-purple-100">Manage your saved cards</p>
+                            <p class="text-sm text-purple-200 mt-2">{{ Auth::user()->savedPaymentMethods()->count() }} saved cards</p>
+                        </div>
+                        <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-credit-card text-2xl"></i>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="{{ route('orders.create') }}" class="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-6 text-white hover:from-green-600 hover:to-green-700 transition-all duration-200 transform hover:scale-105">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-xl font-bold mb-2">🛒 Order Pizza</h3>
+                            <p class="text-green-100">Start a new order</p>
+                            <p class="text-sm text-green-200 mt-2">Fresh pizzas delivered to you</p>
+                        </div>
+                        <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-pizza-slice text-2xl"></i>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
             <!-- Stats Cards -->
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                 <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
