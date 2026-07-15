@@ -50,9 +50,9 @@
                                                     $imageUrl = $item->product->image_url;
                                                 }
                                             @endphp
-                                            
+
                                             @if($imageUrl)
-                                                <img src="{{ $imageUrl }}" alt="{{ $item->product_name }}" 
+                                                <img src="{{ $imageUrl }}" alt="{{ $item->product_name }}"
                                                      class="w-16 h-16 object-cover rounded-xl shadow-sm group-hover:shadow-md transition-all duration-200 border border-gray-200 dark:border-gray-600">
                                             @else
                                                 <div class="w-16 h-16 bg-gradient-to-br from-green-400 to-green-600 rounded-xl flex items-center justify-center shadow-sm group-hover:shadow-md transition-all duration-200">
@@ -66,7 +66,7 @@
                                                 </div>
                                             @endif
                                         </div>
-                                        
+
                                         <!-- Product Details -->
                                         <div class="flex-1 min-w-0">
                                             <h4 class="font-semibold text-gray-900 dark:text-gray-100 group-hover:text-green-700 dark:group-hover:text-green-400 transition-colors duration-200 truncate">
@@ -99,7 +99,7 @@
                                                 Qty: {{ $item->quantity }}
                                             </div>
                                         </div>
-                                        
+
                                         <!-- Price -->
                                         <div class="flex flex-col items-end justify-center">
                                             <div class="font-bold text-lg text-green-700 dark:text-green-400">
@@ -449,7 +449,7 @@
                                     <span class="text-gray-900 dark:text-gray-100 font-semibold">RM {{ number_format($deliveryFee, 2) }}</span>
                                 </div>
                             </div>
-                            
+
                             <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-4 text-white shadow-lg">
                                 <div class="flex justify-between items-center">
                                     <span class="text-lg font-bold flex items-center">
